@@ -71,21 +71,7 @@
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2 self-start md:self-center">
-          <button type="button" onclick="openInstallModal()"
-            class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition flex items-center gap-1.5 shadow-sm">
-            <span>📲 ติดตั้งแอปลงมือถือ / GitHub</span>
-          </button>
-          <div class="bg-black/20 border border-white/15 rounded-xl px-3 py-1.5 text-xs flex items-center gap-2">
-            <svg class="w-4 h-4 text-teal-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-            </svg>
-            <div>
-              <div class="text-teal-200/80 text-[10px]">ผู้ใช้งานในองค์กร</div>
-              <div id="activeUserEmail" class="font-semibold text-white">vet.mueangcm@dld.go.th</div>
-            </div>
-          </div>
-        </div>
+        <span id="activeUserEmail" class="hidden">vet.mueangcm@dld.go.th</span>
       </div>
 
       <!-- Main Navigation Tabs (2 เมนูหลัก) -->
@@ -438,14 +424,40 @@
           </div>
         </div>
 
-        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
-          <div class="flex items-center justify-between mb-3">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between">
             <div>
               <h3 class="font-bold text-sm sm:text-base text-slate-900">สัดส่วนประเภทสัตว์และการคิดค่าบริการ (ผ่าตัดเสร็จสิ้น)</h3>
-              <p class="text-xs text-slate-500">นับเฉพาะเคสที่ยืนยันผ่าตัดเสร็จสิ้นแล้ว แยกตามประเภทและค่าบริการ</p>
+              <p class="text-xs text-slate-500">แยกประเภทหลัก (สัตว์มีเจ้าของ / สัตว์จรจัด) พร้อมแสดงกลุ่มย่อย (บริการฟรี / มีค่าใช้จ่าย)</p>
             </div>
           </div>
-          <div class="relative h-64">
+
+          <!-- Hierarchical Subset Breakdown Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
+            <div class="rounded-xl bg-teal-50/80 border border-teal-200 p-3">
+              <div class="flex items-center justify-between font-bold text-teal-950 text-sm">
+                <span>🏠 สัตว์มีเจ้าของ</span>
+                <span id="subsetOwnedTotal">0 ตัว</span>
+              </div>
+              <div class="mt-1.5 pt-1.5 border-t border-teal-200/70 flex items-center justify-between text-slate-700">
+                <span>↳ บริการฟรี: <strong id="subsetOwnedFree" class="text-emerald-700">0 ตัว</strong></span>
+                <span>↳ มีค่าใช้จ่าย: <strong id="subsetOwnedPaid" class="text-blue-700">0 ตัว</strong></span>
+              </div>
+            </div>
+
+            <div class="rounded-xl bg-amber-50/80 border border-amber-200 p-3">
+              <div class="flex items-center justify-between font-bold text-amber-950 text-sm">
+                <span>🐾 สัตว์จรจัด</span>
+                <span id="subsetStrayTotal">0 ตัว</span>
+              </div>
+              <div class="mt-1.5 pt-1.5 border-t border-amber-200/70 flex items-center justify-between text-slate-700">
+                <span>↳ บริการฟรี: <strong id="subsetStrayFree" class="text-emerald-700">0 ตัว</strong></span>
+                <span>↳ มีค่าใช้จ่าย: <strong id="subsetStrayPaid" class="text-blue-700">0 ตัว</strong></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative h-48">
             <canvas id="ownershipPriceChart"></canvas>
           </div>
         </div>
@@ -1866,6 +1878,8 @@
       let catCount = 0;
       let dogMale = 0, dogFemale = 0, catMale = 0, catFemale = 0;
       let ownedCount = 0, strayCount = 0;
+      let ownedFree = 0, ownedPaid = 0;
+      let strayFree = 0, strayPaid = 0;
       let maleCount = 0, femaleCount = 0;
       let freeCount = 0, paidCount = 0;
       let totalRevenue = 0;
@@ -1881,10 +1895,18 @@
             if (p.gender === 'ผู้') catMale++; else catFemale++;
           }
 
-          if (p.ownershipType === 'มีเจ้าของ') ownedCount++; else strayCount++;
+          const isFree = (p.priceType === 'ฟรี' || Number(p.priceAmount) === 0);
+          if (p.ownershipType === 'มีเจ้าของ') {
+            ownedCount++;
+            if (isFree) ownedFree++; else ownedPaid++;
+          } else {
+            strayCount++;
+            if (isFree) strayFree++; else strayPaid++;
+          }
+
           if (p.gender === 'ผู้') maleCount++; else femaleCount++;
 
-          if (p.priceType === 'ฟรี' || Number(p.priceAmount) === 0) {
+          if (isFree) {
             freeCount++;
           } else {
             paidCount++;
@@ -1904,16 +1926,24 @@
       document.getElementById('kpiOwnershipBreakdown').textContent = 'มีเจ้าของ ' + ownedCount + ' • จรจัด ' + strayCount;
       document.getElementById('kpiGenderBreakdown').textContent = 'เพศผู้ ' + maleCount + ' ตัว • เพศเมีย ' + femaleCount + ' ตัว';
       document.getElementById('kpiTotalRevenue').textContent = totalRevenue.toLocaleString('th-TH') + ' บาท';
-      document.getElementById('kpiPriceBreakdown').textContent = 'บริการฟรี ' + freeCount + ' ตัว • มีค่าใช้จ่าย ' + paidCount + ' ตัว';
+      document.getElementById('kpiPriceBreakdown').textContent =
+        'มีเจ้าของ (ฟรี ' + ownedFree + '/จ่าย ' + ownedPaid + ') • จรจัด (ฟรี ' + strayFree + '/จ่าย ' + strayPaid + ')';
+
+      document.getElementById('subsetOwnedTotal').textContent = ownedCount + ' ตัว';
+      document.getElementById('subsetOwnedFree').textContent = ownedFree + ' ตัว';
+      document.getElementById('subsetOwnedPaid').textContent = ownedPaid + ' ตัว';
+      document.getElementById('subsetStrayTotal').textContent = strayCount + ' ตัว';
+      document.getElementById('subsetStrayFree').textContent = strayFree + ' ตัว';
+      document.getElementById('subsetStrayPaid').textContent = strayPaid + ' ตัว';
 
       const tablePetsCount = tableFiltered.reduce(function(acc, item) { return acc + item.matchedPets.length; }, 0);
       document.getElementById('tableResultCount').textContent = 'แสดงในตาราง ' + tableFiltered.length + ' ราย (' + tablePetsCount + ' ตัว)';
 
-      renderCharts(dogMale, dogFemale, catMale, catFemale, ownedCount, strayCount, freeCount, paidCount);
+      renderCharts(dogMale, dogFemale, catMale, catFemale, ownedFree, ownedPaid, strayFree, strayPaid);
       renderDashboardTable(tableFiltered);
     }
 
-    function renderCharts(dogMale, dogFemale, catMale, catFemale, ownedCount, strayCount, freeCount, paidCount) {
+    function renderCharts(dogMale, dogFemale, catMale, catFemale, ownedFree, ownedPaid, strayFree, strayPaid) {
       if (typeof Chart === 'undefined') return;
 
       const ctx1 = document.getElementById('speciesGenderChart').getContext('2d');
@@ -1942,19 +1972,33 @@
       const ctx2 = document.getElementById('ownershipPriceChart').getContext('2d');
       if (ownershipPriceChartInstance) ownershipPriceChartInstance.destroy();
       ownershipPriceChartInstance = new Chart(ctx2, {
-        type: 'doughnut',
+        type: 'bar',
         data: {
-          labels: ['สัตว์มีเจ้าของ', 'สัตว์จรจัด', 'บริการฟรี', 'มีค่าใช้จ่าย'],
-          datasets: [{
-            data: [ownedCount, strayCount, freeCount, paidCount],
-            backgroundColor: ['#0f766e', '#d97706', '#10b981', '#3b82f6']
-          }]
+          labels: ['🏠 สัตว์มีเจ้าของ', '🐾 สัตว์จรจัด'],
+          datasets: [
+            {
+              label: 'บริการฟรี (ตัว)',
+              data: [ownedFree, strayFree],
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            },
+            {
+              label: 'มีค่าใช้จ่าย (ตัว)',
+              data: [ownedPaid, strayPaid],
+              backgroundColor: '#3b82f6',
+              borderRadius: 6
+            }
+          ]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
             legend: { position: 'bottom' }
+          },
+          scales: {
+            x: { stacked: false },
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
           }
         }
       });
