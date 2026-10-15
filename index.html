@@ -1,0 +1,2535 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="จองคิวทำหมัน">
+  <link id="pwaManifestLink" rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  <title>ระบบการจองคิวผ่าตัดทำหมัน - สำนักงานปศุสัตว์อำเภอเมืองเชียงใหม่</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Sarabun', 'Inter', sans-serif;
+      background-color: #f1f5f9;
+      color: #0f172a;
+    }
+    .glass-header {
+      background: linear-gradient(135deg, #0f766e 0%, #115e59 55%, #134e4a 100%);
+    }
+    .pet-card-enter {
+      animation: fadeSlideIn 0.22s ease-out;
+    }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: #ffffff; }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Organization Header -->
+  <header class="glass-header text-white shadow-lg no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center border border-white/25 shrink-0 shadow-inner">
+            <svg class="w-7 h-7 text-teal-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 21c-4.418 0-8-3.134-8-7 0-2.65 1.68-4.96 4.16-6.14L9 4l3 2 3-2 .84 3.86C18.32 9.04 20 11.35 20 14c0 3.866-3.582 7-8 7z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 13h.01M15 13h.01M10 16.5c.6.5 1.3.75 2 .75s1.4-.25 2-.75"/>
+            </svg>
+          </div>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-teal-400/20 text-teal-100 border border-teal-300/30">
+                กรมปศุสัตว์ • จังหวัดเชียงใหม่
+              </span>
+              <span id="connectionBadge" class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-400/20 text-emerald-100 border border-emerald-300/30 flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+                เวลามาตรฐานกรุงเทพฯ (GMT+7)
+              </span>
+            </div>
+            <h1 class="text-xl sm:text-2xl font-bold tracking-tight mt-0.5">
+              ระบบการจองคิวผ่าตัดทำหมันสัตว์
+            </h1>
+            <p class="text-xs sm:text-sm text-teal-100/90">
+              สำนักงานปศุสัตว์อำเภอเมืองเชียงใหม่ • รหัสคิวมาตรฐาน HN48YYMMDDXXX เชื่อมโยง Google Sheets
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 self-start md:self-center">
+          <button type="button" onclick="openInstallModal()"
+            class="px-3 py-2 rounded-xl text-xs font-bold bg-amber-400 text-slate-950 hover:bg-amber-300 transition flex items-center gap-1.5 shadow-sm">
+            <span>📲 ติดตั้งแอปลงมือถือ / GitHub</span>
+          </button>
+          <div class="bg-black/20 border border-white/15 rounded-xl px-3 py-1.5 text-xs flex items-center gap-2">
+            <svg class="w-4 h-4 text-teal-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+            </svg>
+            <div>
+              <div class="text-teal-200/80 text-[10px]">ผู้ใช้งานในองค์กร</div>
+              <div id="activeUserEmail" class="font-semibold text-white">vet.mueangcm@dld.go.th</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Tabs (2 เมนูหลัก) -->
+      <nav class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 border-t border-white/15 pt-3" aria-label="Main Navigation">
+        <button type="button" id="tabBtnBooking" onclick="switchView('booking')"
+          class="w-full justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 bg-white text-teal-900 shadow-sm">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+          </svg>
+          <span id="tabBookingLabel">1. จองคิวผ่าตัดทำหมัน (กรอกประวัติ)</span>
+        </button>
+
+        <button type="button" id="tabBtnDashboard" onclick="switchView('dashboard')"
+          class="w-full justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 bg-white/10 text-white hover:bg-white/20">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+          </svg>
+          <span>2. Dashboard สรุปข้อมูลรายเดือน</span>
+          <span id="navTotalBookingsBadge" class="ml-1 px-2 py-0.5 text-xs rounded-full bg-teal-950/60 text-teal-100">ผ่าตัดเสร็จ 0 ราย</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==================== VIEW 1: BOOKING FORM ==================== -->
+    <section id="viewBooking" class="space-y-6">
+
+      <!-- Edit Mode Alert Banner -->
+      <div id="editModeBanner" class="hidden bg-amber-50 border-2 border-amber-400 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wide">
+            โหมดแก้ไขข้อมูล
+          </span>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold text-amber-950">
+              กำลังแก้ไขข้อมูลรหัสคิว: <span id="editingBookingIdLabel" class="underline font-mono">HN48261018001</span>
+            </h3>
+            <p class="text-xs text-amber-800">
+              คุณสามารถแก้ไขข้อมูลเจ้าของสัตว์ แก้ไขรายละเอียดสัตว์ เพิ่มสัตว์ตัวใหม่ หรือลบสัตว์ในคิวนี้ แล้วกดปุ่ม "บันทึกการแก้ไขข้อมูล" ด้านล่าง
+            </p>
+          </div>
+        </div>
+        <button type="button" onclick="cancelEditBooking()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-800 border border-amber-400 hover:bg-amber-100 transition shrink-0">
+          ยกเลิกการแก้ไข (กลับหน้า Dashboard)
+        </button>
+      </div>
+
+      <!-- Info Banner & Queue ID Preview (ลบเลขลำดับ 1.1 และลบปุ่มทดลองกรอกข้อมูลตัวอย่างแล้ว) -->
+      <div class="bg-teal-50 border border-teal-200 rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-sm">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-base font-bold text-teal-950">แบบฟอร์มลงทะเบียนและจองคิวผ่าตัดทำหมันสัตว์</h2>
+            <p class="text-xs sm:text-sm text-teal-800">
+              กรอกข้อมูลเจ้าของสัตว์เพียงครั้งเดียว หากเจ้าของนำสัตว์มาหลายตัว สามารถกดปุ่ม <strong>"+ เพิ่มจำนวนสัตว์ (เจ้าของเดิม)"</strong> เพื่อกรอกข้อมูลสัตว์เพิ่มได้ทันที หรือถ้ามีตัวเดียวสามารถกดบันทึกข้อมูลได้เลย
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5 shrink-0">
+          <div class="bg-white border border-teal-300 rounded-xl px-3.5 py-2 text-xs shadow-sm">
+            <div class="text-slate-500 font-medium">การรันรหัสคิว (HN48 + ปีค.ศ. + เดือน + วันนัด + ลำดับเริ่ม 001):</div>
+            <div id="liveQueueIdPreview" class="font-mono font-bold text-xs sm:text-sm text-amber-700 mt-0.5">⏳ รอออกรหัสเมื่อคลิกยืนยันผ่าตัดเสร็จ</div>
+          </div>
+          <button type="button" onclick="resetBookingForm()"
+            class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white text-slate-600 border border-slate-300 hover:bg-slate-100 transition">
+            ล้างฟอร์ม
+          </button>
+        </div>
+      </div>
+
+      <form id="bookingForm" onsubmit="handleFormSubmit(event)" novalidate class="space-y-6">
+
+        <!-- Part 1: Owner Details (ไม่มีเลขลำดับนำหน้า) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="bg-slate-800 text-white px-5 py-3.5 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="w-7 h-7 rounded-lg bg-teal-500 text-slate-950 font-bold text-xs flex items-center justify-center">ส่วนที่ 1</span>
+              <h3 class="font-bold text-base">ข้อมูลเจ้าของสัตว์ / ผู้นำสัตว์มารับบริการ</h3>
+            </div>
+            <span class="text-xs text-slate-300">* ช่องที่มีเครื่องหมายดอกจันสีแดง บังคับกรอก</span>
+          </div>
+
+          <div class="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label for="ownerName" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                ชื่อ-สกุล เจ้าของสัตว์ <span class="text-rose-600">* (บังคับใส่)</span>
+              </label>
+              <input type="text" id="ownerName" required
+                placeholder="เช่น นายสมชาย ใจดี หรือ นางสาวกานดา รักสัตว์"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600">
+            </div>
+
+            <div>
+              <label for="ownerPhone" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                เบอร์โทรศัพท์ <span class="text-rose-600">* (บังคับใส่)</span>
+              </label>
+              <input type="tel" id="ownerPhone" required
+                placeholder="เช่น 081-234-5678 หรือ 053-221-xxx"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600">
+            </div>
+
+            <div class="md:col-span-1">
+              <label for="ownerAddress" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                ที่อยู่เจ้าของสัตว์ <span class="text-rose-600">* (บังคับใส่)</span>
+              </label>
+              <input type="text" id="ownerAddress" required
+                placeholder="บ้านเลขที่ หมู่ ถนน ตำบล อำเภอเมืองเชียงใหม่ จ.เชียงใหม่"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600">
+            </div>
+
+            <div>
+              <label for="ownerNationalId" class="block text-sm font-semibold text-slate-800 mb-1.5">
+                เลขบัตรประชาชน <span class="text-slate-400 font-normal">(ไม่บังคับใส่)</span>
+              </label>
+              <input type="text" id="ownerNationalId" maxlength="17"
+                placeholder="เลขประจำตัวประชาชน 13 หลัก (เว้นว่างได้)"
+                class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600 focus:border-teal-600">
+            </div>
+          </div>
+        </div>
+
+        <!-- Part 2: Dynamic Pet List (ไม่มีเลขลำดับนำหน้า) -->
+        <div class="space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-white px-5 py-3.5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center gap-2.5">
+              <span class="w-7 h-7 rounded-lg bg-teal-600 text-white font-bold text-xs flex items-center justify-center">ส่วนที่ 2</span>
+              <div>
+                <h3 class="font-bold text-base text-slate-900">รายละเอียดสัตว์ที่จองคิวผ่าตัดทำหมัน</h3>
+                <p class="text-xs text-slate-500">ของเจ้าของเดิม • สามารถเพิ่มสัตว์หลายตัวในคิวเดียวกันได้</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-semibold px-3 py-1.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
+                จำนวนสัตว์ในรายการนี้: <strong id="currentPetCountBadge" class="text-sm">1</strong> ตัว
+              </span>
+              <button type="button" onclick="addPetCard()"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition flex items-center gap-1.5 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>เพิ่มจำนวนสัตว์ (เจ้าของเดิม)</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="petsContainer" class="space-y-5"></div>
+        </div>
+
+        <!-- Validation Error Alert -->
+        <div id="formErrorBox" class="hidden bg-rose-50 border border-rose-300 text-rose-900 rounded-2xl p-4 text-sm">
+          <div class="font-bold flex items-center gap-2 mb-1">
+            <svg class="w-5 h-5 text-rose-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span>กรุณาตรวจสอบข้อมูลที่บังคับกรอกให้ครบถ้วน:</span>
+          </div>
+          <ul id="formErrorList" class="list-disc list-inside space-y-0.5 text-xs sm:text-sm ml-1"></ul>
+        </div>
+
+        <!-- Bottom Action Bar -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+            <button type="button" onclick="addPetCard()"
+              class="px-5 py-3 rounded-xl font-bold text-sm bg-amber-500 hover:bg-amber-600 text-slate-950 transition flex items-center justify-center gap-2 shadow-sm">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+              </svg>
+              <span>+ เพิ่มจำนวนสัตว์ตัวถัดไป (เจ้าของเดิม)</span>
+            </button>
+            <div class="text-xs text-slate-600">
+              <div>จำนวนสัตว์ที่กำลังบันทึก: <strong id="summaryPetCountText" class="text-slate-900">1 ตัว</strong></div>
+              <div>รวมค่าบริการทั้งสิ้น: <strong id="summaryTotalPriceText" class="text-teal-700 font-bold">ฟรี (0 บาท)</strong></div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <button type="button" id="btnCancelEditBottom" onclick="cancelEditBooking()"
+              class="hidden px-4 py-3 rounded-xl font-bold text-sm bg-slate-200 hover:bg-slate-300 text-slate-800 transition">
+              ยกเลิกการแก้ไข
+            </button>
+
+            <button type="submit" id="btnSubmitStay" onclick="setSubmitRedirect(false)"
+              class="flex-1 sm:flex-initial px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 hover:bg-slate-900 text-white transition flex items-center justify-center gap-2 shadow-sm">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+              <span id="btnSubmitStayText">บันทึกข้อมูลคิวนี้</span>
+            </button>
+
+            <button type="submit" id="btnSubmitGoDashboard" onclick="setSubmitRedirect(true)"
+              class="flex-1 sm:flex-initial px-6 py-3 rounded-xl font-bold text-sm bg-teal-600 hover:bg-teal-700 text-white transition flex items-center justify-center gap-2 shadow-md">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <span id="btnSubmitGoDashboardText">บันทึกข้อมูล และไปหน้า Dashboard</span>
+            </button>
+          </div>
+        </div>
+
+      </form>
+    </section>
+
+    <!-- ==================== VIEW 2: DASHBOARD ==================== -->
+    <section id="viewDashboard" class="hidden space-y-6">
+
+      <!-- Dashboard Header & Month Filter Bar -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-slate-100">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold text-sm">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-slate-900">
+                Dashboard สรุปข้อมูลการให้บริการผ่าตัดทำหมัน (นับเฉพาะเคสผ่าตัดเสร็จสิ้นแล้ว)
+              </h2>
+              <p class="text-xs sm:text-sm text-slate-500">
+                สำนักงานปศุสัตว์อำเภอเมืองเชียงใหม่ • ตัวเลขสรุปภาพรวมและกราฟคำนวณเฉพาะเคสที่กดยืนยัน "ผ่าตัดเสร็จสิ้น" แล้วเท่านั้น
+              </p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="switchView('booking')"
+              class="px-4 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+              </svg>
+              <span>เพิ่มคิวผ่าตัดทำหมันใหม่</span>
+            </button>
+            <button type="button" onclick="exportFilteredCsv()"
+              class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 transition flex items-center gap-1.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+              </svg>
+              <span>ส่งออก CSV (เดือนที่เลือก)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-4">
+          <div>
+            <label for="filterMonth" class="block text-xs font-bold text-teal-900 mb-1">
+              เลือกเดือนที่ให้บริการ (แยกตามรายเดือน)
+            </label>
+            <select id="filterMonth" onchange="renderDashboard()"
+              class="w-full rounded-xl border-2 border-teal-600 bg-teal-50/50 px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600">
+              <option value="ALL">ทุกเดือน (ข้อมูลทั้งหมด)</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filterSpecies" class="block text-xs font-semibold text-slate-600 mb-1">
+              ชนิดสัตว์ (สุนัข / แมว)
+            </label>
+            <select id="filterSpecies" onchange="renderDashboard()"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-600">
+              <option value="ALL">ทั้งหมด (สุนัข และ แมว)</option>
+              <option value="สุนัข">เฉพาะ สุนัข</option>
+              <option value="แมว">เฉพาะ แมว</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filterOwnership" class="block text-xs font-semibold text-slate-600 mb-1">
+              ประเภทสัตว์ (มีเจ้าของ / จรจัด)
+            </label>
+            <select id="filterOwnership" onchange="renderDashboard()"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-600">
+              <option value="ALL">ทั้งหมด (มีเจ้าของ และ จรจัด)</option>
+              <option value="มีเจ้าของ">มีเจ้าของ</option>
+              <option value="จรจัด">จรจัด</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="filterSearch" class="block text-xs font-semibold text-slate-600 mb-1">
+              ค้นหารหัสคิว (HN48...) / ชื่อเจ้าของ / เบอร์โทร / ชื่อสัตว์
+            </label>
+            <input type="search" id="filterSearch" oninput="syncSearchInputs(this.value)"
+              placeholder="พิมพ์รหัส HN48..., ชื่อเจ้าของ, เบอร์โทร..."
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-teal-600">
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Summary Cards (รวมเฉพาะเคสที่กดยืนยัน "ผ่าตัดเสร็จสิ้น" เท่านั้น) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">ผู้รับบริการ (ผ่าตัดเสร็จแล้ว)</span>
+            <span class="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center font-bold text-xs">ราย</span>
+          </div>
+          <div id="kpiOwnersCount" class="text-3xl font-bold text-slate-900 mt-2">0 ราย</div>
+          <div id="kpiQueueStatusBreakdown" class="text-xs font-semibold text-emerald-700 mt-1">นับเฉพาะเคสยืนยันผ่าตัดเสร็จสิ้น</div>
+          <div id="kpiMonthLabel" class="text-[11px] text-slate-500 mt-0.5">ข้อมูลทุกเดือน</div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">จำนวนสัตว์ทำหมัน (ผ่าตัดเสร็จแล้ว)</span>
+            <span class="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs">ตัว</span>
+          </div>
+          <div id="kpiPetsCount" class="text-3xl font-bold text-slate-900 mt-2">0 ตัว</div>
+          <div id="kpiSpeciesBreakdown" class="text-xs text-slate-600 mt-1">สุนัข 0 ตัว • แมว 0 ตัว</div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">ประเภท & เพศสัตว์ (ผ่าตัดเสร็จแล้ว)</span>
+            <span class="w-8 h-8 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs">สัดส่วน</span>
+          </div>
+          <div id="kpiOwnershipBreakdown" class="text-base font-bold text-slate-900 mt-2">มีเจ้าของ 0 • จรจัด 0</div>
+          <div id="kpiGenderBreakdown" class="text-xs text-slate-600 mt-1.5">เพศผู้ 0 ตัว • เพศเมีย 0 ตัว</div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-500">สรุปค่าบริการรวม (ผ่าตัดเสร็จแล้ว)</span>
+            <span class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs">฿</span>
+          </div>
+          <div id="kpiTotalRevenue" class="text-3xl font-bold text-emerald-700 mt-2">0 บาท</div>
+          <div id="kpiPriceBreakdown" class="text-xs text-slate-600 mt-1">บริการฟรี 0 ตัว • มีค่าใช้จ่าย 0 ตัว</div>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="font-bold text-sm sm:text-base text-slate-900">สถิติจำนวนสัตว์ที่ผ่าตัดเสร็จสิ้น แยกตามชนิดและเพศ</h3>
+              <p class="text-xs text-slate-500">นับเฉพาะเคสที่ยืนยันผ่าตัดเสร็จสิ้นแล้ว ในช่วงเดือนที่เลือก</p>
+            </div>
+          </div>
+          <div class="relative h-64">
+            <canvas id="speciesGenderChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h3 class="font-bold text-sm sm:text-base text-slate-900">สัดส่วนประเภทสัตว์และการคิดค่าบริการ (ผ่าตัดเสร็จสิ้น)</h3>
+              <p class="text-xs text-slate-500">นับเฉพาะเคสที่ยืนยันผ่าตัดเสร็จสิ้นแล้ว แยกตามประเภทและค่าบริการ</p>
+            </div>
+          </div>
+          <div class="relative h-64">
+            <canvas id="ownershipPriceChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Master List Table of Individual Bookings -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 bg-slate-800 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h3 class="font-bold text-base">ทะเบียนรายชื่อผู้รับบริการผ่าตัดทำหมัน (คลิกเพื่อดูรายละเอียด / แก้ไข / ลบ)</h3>
+              <span id="tableResultCount" class="text-xs font-semibold px-3 py-0.5 rounded-full bg-teal-500/20 text-teal-200 border border-teal-400/30">
+                แสดง 0 รายการ
+              </span>
+            </div>
+            <p class="text-xs text-slate-300 mt-0.5">เมื่อเปลี่ยนสถานะเป็น "✓ ผ่าตัดเสร็จสิ้น" ระบบจะรันรหัส HN48YYMMDDXXX (เริ่มจาก 001) และนำไปคำนวณในสรุป Dashboard ทันที</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative flex-1 sm:w-72">
+              <input type="search" id="tableQuickSearch" oninput="syncSearchInputs(this.value)"
+                placeholder="ค้นหารหัส HN48..., ชื่อเจ้าของ, เบอร์โทร, ชื่อสัตว์..."
+                class="w-full rounded-xl bg-slate-900/90 border border-slate-600 pl-9 pr-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+            </div>
+
+            <select id="filterStatus" onchange="renderDashboard()"
+              class="rounded-xl bg-slate-900/90 border border-slate-600 px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+              <option value="ALL">ทุกสถานะคิว</option>
+              <option value="รอดำเนินการ">รอดำเนินการ</option>
+              <option value="ผ่าตัดเสร็จสิ้น">ผ่าตัดเสร็จสิ้น</option>
+              <option value="ยกเลิกคิว">ยกเลิกคิว</option>
+            </select>
+
+            <button type="button" onclick="resetDashboardFilters()"
+              class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-slate-200 transition">
+              ล้างตัวกรอง
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 text-xs font-bold border-b border-slate-200">
+                <th class="py-3 px-3.5 whitespace-nowrap">รหัสคิว (HN48)</th>
+                <th class="py-3 px-3.5 whitespace-nowrap">วัน-เวลาที่จองคิว</th>
+                <th class="py-3 px-3.5">ชื่อ-สกุล เจ้าของสัตว์</th>
+                <th class="py-3 px-3.5 whitespace-nowrap">เบอร์โทรศัพท์</th>
+                <th class="py-3 px-3.5 text-center whitespace-nowrap">จำนวนสัตว์</th>
+                <th class="py-3 px-3.5">รายละเอียดสัตว์ (ชนิด/เพศ/ประเภท)</th>
+                <th class="py-3 px-3.5 text-right whitespace-nowrap">ราคาค่าบริการ</th>
+                <th class="py-3 px-3.5 text-center whitespace-nowrap">สถานะ</th>
+                <th class="py-3 px-3.5 text-center whitespace-nowrap">การจัดการ (ดู / แก้ไข / ลบ)</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardTableBody" class="divide-y divide-slate-200 text-sm"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ==================== CANVAS-ONLY CODE COPY DRAWER (ซ่อนอัตโนมัติเมื่อใช้งานจริงบนมือถือ/เว็บ) ==================== -->
+    <section id="canvasCopyHelper" class="hidden mt-8 pt-4 border-t border-slate-200 no-print">
+      <details class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+        <summary class="text-xs font-bold text-slate-600 cursor-pointer select-none">
+          สำหรับผู้ดูแลระบบ: คัดลอกโค้ด Index.html และ Code.gs เวอร์ชันล่าสุดไปอัปเดตบน Apps Script / GitHub Pages (แสดงเฉพาะในหน้าพรีวิวนี้เท่านั้น)
+        </summary>
+        <div class="mt-4 space-y-4">
+          <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div class="text-xs font-bold text-emerald-800 uppercase">ฐานข้อมูล Google Sheet ที่ผูกไว้</div>
+              <div class="text-sm font-bold text-slate-900 mt-0.5">ระบบการจองคิวผ่าตัดทำหมัน - สำนักงานปศุสัตว์อำเภอเมืองเชียงใหม่</div>
+              <div class="text-xs text-slate-600 font-mono mt-0.5">Spreadsheet ID: 1J9Lzra8Vaq_c-8hotM1KEgLxV9P9h9Ql47ycQiGo14U</div>
+            </div>
+            <a href="https://docs.google.com/spreadsheets/d/1J9Lzra8Vaq_c-8hotM1KEgLxV9P9h9Ql47ycQiGo14U/edit" target="_blank" rel="noopener noreferrer"
+              class="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 text-white hover:bg-emerald-700 transition shrink-0 text-center shadow-sm">
+              เปิดไฟล์ Google Sheet ↗
+            </a>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="codeGsTextarea" class="font-bold text-sm text-slate-800">ไฟล์ที่ 1: Code.gs (อัปเดตใน Apps Script เพื่อให้เริ่มรัน 001, แก้วันเวลา Sat Dec 1899, และรองรับ GitHub Pages API)</label>
+              <button type="button" onclick="copyCodeBlock('codeGsTextarea', 'คัดลอกโค้ด Code.gs เรียบร้อยแล้ว')"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition">
+                คัดลอก Code.gs
+              </button>
+            </div>
+            <textarea id="codeGsTextarea" readonly rows="8"
+              class="w-full font-mono text-xs bg-slate-900 text-teal-100 rounded-xl p-4 border border-slate-700 focus:outline-none"></textarea>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-sm text-slate-800">ไฟล์ที่ 2: Index.html (นำไปวางทับใน Apps Script หรืออัปโหลดเป็น index.html บน GitHub Pages)</span>
+              <button type="button" onclick="copyCurrentIndexHtml()"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-600 transition">
+                คัดลอก Index.html ทั้งไฟล์ในคลิกเดียว
+              </button>
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <div class="flex items-center justify-between">
+              <label for="manifestTextarea" class="font-bold text-sm text-slate-800">ไฟล์ที่ 3: appsscript.json</label>
+              <button type="button" onclick="copyCodeBlock('manifestTextarea', 'คัดลอกโค้ด appsscript.json เรียบร้อยแล้ว')"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-700 text-white hover:bg-slate-800 transition">
+                คัดลอก appsscript.json
+              </button>
+            </div>
+            <textarea id="manifestTextarea" readonly rows="4"
+              class="w-full font-mono text-xs bg-slate-900 text-amber-200 rounded-xl p-4 border border-slate-700 focus:outline-none"></textarea>
+          </div>
+        </div>
+      </details>
+    </section>
+
+  </main>
+
+  <!-- ==================== MODAL: INDIVIDUAL RECORD DETAILS ==================== -->
+  <div id="detailModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+      <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between no-print">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="modalBookingIdBadge" class="px-2.5 py-0.5 text-xs font-bold font-mono rounded-full bg-teal-400 text-slate-950">HN48261018001</span>
+            <span id="modalStatusBadge" class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-amber-400/20 text-amber-200">รอดำเนินการ</span>
+          </div>
+          <h3 class="text-lg font-bold mt-1">รายละเอียดข้อมูลการจองคิวผ่าตัดทำหมัน (รายบุคคล)</h3>
+        </div>
+        <button type="button" onclick="closeDetailModal()"
+          class="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition">
+          ✕
+        </button>
+      </div>
+
+      <div id="modalBodyContent" class="p-6 overflow-y-auto space-y-6 flex-1"></div>
+
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 no-print">
+        <div class="flex items-center gap-2">
+          <label for="modalStatusSelect" class="text-xs font-bold text-slate-700">อัปเดตสถานะคิว:</label>
+          <select id="modalStatusSelect" onchange="handleModalStatusChange(this.value)"
+            class="rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-800 bg-white">
+            <option value="รอดำเนินการ">รอดำเนินการ</option>
+            <option value="ผ่าตัดเสร็จสิ้น">ผ่าตัดเสร็จสิ้น</option>
+            <option value="ยกเลิกคิว">ยกเลิกคิว</option>
+          </select>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" onclick="editFromModal()"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-600 transition flex items-center gap-1">
+            <span>✎ แก้ไขข้อมูลรายนี้</span>
+          </button>
+          <button type="button" onclick="deleteFromModal()"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 transition flex items-center gap-1">
+            <span>🗑 ลบข้อมูลคิวนี้</span>
+          </button>
+          <button type="button" onclick="window.print()"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-900 transition flex items-center gap-1">
+            <span>พิมพ์ใบนัด / ประวัติ</span>
+          </button>
+          <button type="button" onclick="closeDetailModal()"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300 transition">
+            ปิดหน้าต่าง
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: DELETE CONFIRMATION ==================== -->
+  <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-start gap-3.5">
+        <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 font-bold text-lg">
+          !
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-slate-900">ยืนยันการลบข้อมูลคิวผ่าตัดทำหมัน</h3>
+          <p id="deleteConfirmText" class="text-xs sm:text-sm text-slate-600 mt-1">
+            คุณต้องการลบข้อมูลรหัสคิวนี้ใช่หรือไม่? เมื่อลบแล้วจะไม่สามารถเรียกคืนได้
+          </p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeDeleteConfirmModal()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 transition">
+          ยกเลิก
+        </button>
+        <button type="button" onclick="confirmDeleteBooking()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 transition shadow-sm">
+          ยืนยันการลบข้อมูล
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODAL: GITHUB PAGES PWA & MOBILE INSTALL ==================== -->
+  <div id="installAppModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-slate-200 space-y-5">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+        <div>
+          <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-teal-100 text-teal-800">GitHub Pages PWA & Mobile App</span>
+          <h3 class="text-base sm:text-lg font-bold text-slate-900 mt-1">ติดตั้งแอปลงมือถือผ่าน GitHub Pages (ไร้แถบรายงานการละเมิด 100%)</h3>
+        </div>
+        <button type="button" onclick="closeInstallModal()"
+          class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold">
+          ✕
+        </button>
+      </div>
+
+      <!-- Native PWA Install Button (shows automatically on GitHub Pages in Android Chrome) -->
+      <div id="nativeInstallBtnWrapper" class="hidden">
+        <button type="button" onclick="triggerNativePwaInstall()"
+          class="w-full py-3.5 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-md transition flex items-center justify-center gap-2">
+          <span>📲 กดที่นี่เพื่อติดตั้งแอปลงหน้าจอมือถือทันที (Install App)</span>
+        </button>
+      </div>
+
+      <!-- Connect GAS Backend URL for GitHub Pages -->
+      <div class="rounded-xl bg-slate-50 border border-slate-200 p-4 space-y-3">
+        <div class="font-bold text-xs sm:text-sm text-slate-900">
+          1. เชื่อมต่อลิงก์ Google Apps Script Web App URL (สำหรับโหมด GitHub Pages)
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          เมื่อนำไฟล์ขึ้น <strong>GitHub Pages</strong> แอปจะเชื่อมต่อกับ Google Sheets ของคุณผ่านลิงก์ Web App (`https://script.google.com/macros/s/.../exec`) โดยตรง ทำให้<strong>ไม่มีแถบ "รายงานการละเมิด"</strong> และ<strong>กดติดตั้งเป็นแอปลงมือถือได้จริง</strong>:
+        </p>
+        <div class="space-y-2">
+          <input type="url" id="gasExecUrlInput"
+            placeholder="วางลิงก์ https://script.google.com/macros/s/.../exec ที่นี่"
+            class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-teal-600">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button type="button" onclick="saveGasApiUrlFromModal()"
+              class="py-2.5 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition shadow-sm">
+              บันทึกเชื่อมต่อฐานข้อมูลในเครื่องนี้
+            </button>
+            <button type="button" onclick="downloadGithubPagesIndexHtml()"
+              class="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition shadow-sm">
+              1. ดาวน์โหลด index.html (ฝังลิงก์นี้แล้ว)
+            </button>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <button type="button" onclick="downloadPwaManifestFile()"
+              class="py-2 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs transition">
+              2. ดาวน์โหลด manifest.json
+            </button>
+            <button type="button" onclick="downloadPwaSwFile()"
+              class="py-2 px-3 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-xs transition">
+              3. ดาวน์โหลด sw.js
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step-by-step GitHub Pages & Mobile Home Screen Guide -->
+      <div class="rounded-xl bg-teal-50 border border-teal-200 p-4 space-y-2 text-xs text-teal-950">
+        <div class="font-bold text-sm">2. ขั้นตอนนำขึ้น GitHub Pages และกดติดตั้งลงมือถือ</div>
+        <ol class="list-decimal list-inside space-y-1.5 leading-relaxed">
+          <li>ในหน้า Google Apps Script กด <strong>Deploy &gt; Manage deployments &gt; แก้ไข (✎) &gt; เลือก New version</strong> และตั้งค่า <em>Who has access</em> เป็น <strong>"ทุกคน (Anyone)"</strong> เพื่อให้ GitHub Pages ส่งข้อมูลเข้า Google Sheet ได้</li>
+          <li>อัปโหลดไฟล์ทั้ง 5 ไฟล์จากแพ็กเกจ GitHub Pages (`index.html`, `manifest.json`, `sw.js`, `icon-192.png`, `icon-512.png`) ขึ้น Repository บน GitHub แล้วเปิด <strong>Settings &gt; Pages &gt; เลือก Branch: main &gt; Save</strong></li>
+          <li>เปิดลิงก์ `https://ชื่อผู้ใช้.github.io/ชื่อโปรเจกต์/` บนมือถือ แล้วกดเมนูเบราว์เซอร์เลือก <strong>"ติดตั้งแอป (Install app)"</strong> หรือ <strong>"เพิ่มไปยังหน้าจอโฮม (Add to Home Screen)"</strong> ได้ทันที!</li>
+        </ol>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeInstallModal()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300 transition">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 hidden max-w-md bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-teal-500/40 flex items-center gap-3">
+    <span class="w-6 h-6 rounded-full bg-teal-500 text-slate-950 font-bold text-xs flex items-center justify-center shrink-0">✓</span>
+    <div id="toastMessage" class="text-xs sm:text-sm font-medium">บันทึกข้อมูลสำเร็จ</div>
+  </div>
+
+  <script>
+    // ==================== CONFIGURATION & BANGKOK TIME (GMT+7) ====================
+    const STORAGE_KEY = 'dld_cm_spay_neuter_bookings_v2';
+    const GAS_URL_STORAGE_KEY = 'dld_cm_spay_neuter_gas_url_v1';
+    const DEFAULT_GAS_EXEC_URL = '';
+
+    function getBangkokNowParts() {
+      try {
+        const now = new Date();
+        const fmt = new Intl.DateTimeFormat('en-GB', {
+          timeZone: 'Asia/Bangkok',
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        });
+        const parts = {};
+        fmt.formatToParts(now).forEach(function(p) { parts[p.type] = p.value; });
+        const hh = parts.hour === '24' ? '00' : parts.hour;
+        return {
+          date: parts.year + '-' + parts.month + '-' + parts.day,
+          time: hh + ':' + parts.minute,
+          full: parts.year + '-' + parts.month + '-' + parts.day + ' ' + hh + ':' + parts.minute
+        };
+      } catch (e) {
+        const d = new Date();
+        const utcMs = d.getTime() + (d.getTimezoneOffset() * 60000);
+        const bkk = new Date(utcMs + (7 * 3600000));
+        const yyyy = bkk.getFullYear();
+        const mm = ('0' + (bkk.getMonth() + 1)).slice(-2);
+        const dd = ('0' + bkk.getDate()).slice(-2);
+        const hh = ('0' + bkk.getHours()).slice(-2);
+        const min = ('0' + bkk.getMinutes()).slice(-2);
+        return {
+          date: yyyy + '-' + mm + '-' + dd,
+          time: hh + ':' + min,
+          full: yyyy + '-' + mm + '-' + dd + ' ' + hh + ':' + min
+        };
+      }
+    }
+
+    function normalizeDateStr(val) {
+      if (!val) return '';
+      const clean = String(val).replace(/^'/, '').trim();
+      const m = clean.match(/(\d{4}-\d{2}-\d{2})/);
+      if (m) return m[1];
+      return clean.substring(0, 10);
+    }
+
+    function normalizeTimeStr(val) {
+      if (val === null || val === undefined || val === '') return '';
+      const str = String(val).replace(/^'/, '').trim();
+      const mSimple = str.match(/^(\d{1,2}):(\d{2})$/);
+      if (mSimple) {
+        return ('0' + mSimple[1]).slice(-2) + ':' + mSimple[2];
+      }
+      const mTimeInStr = str.match(/(\d{1,2}):(\d{2}):\d{2}/);
+      if (mTimeInStr) {
+        return ('0' + mTimeInStr[1]).slice(-2) + ':' + mTimeInStr[2];
+      }
+      return str;
+    }
+
+    const INITIAL_SAMPLE_BOOKINGS = [
+      {
+        bookingId: 'WAIT-261015092000',
+        createdAt: '2026-10-15 09:20',
+        staffEmail: 'vet.mueangcm@dld.go.th',
+        ownerName: 'นางสาวพิมพ์ชนก เจริญราษฎร์',
+        ownerAddress: '128/4 ม.3 ต.สุเทพ อ.เมืองเชียงใหม่ จ.เชียงใหม่',
+        phone: '089-456-1123',
+        nationalId: '1509901234567',
+        status: 'รอดำเนินการ',
+        pets: [
+          {
+            petId: 'WAIT-261015092000-P1',
+            petName: 'ทองเอก',
+            ownershipType: 'มีเจ้าของ',
+            species: 'สุนัข',
+            gender: 'ผู้',
+            ageYears: 2,
+            ageMonths: 4,
+            ageText: '2 ปี 4 เดือน',
+            breed: 'ผสม (ไทย-โกลเด้น)',
+            markings: 'สีน้ำตาลทอง มีจุดขาวที่อก',
+            appointmentDate: '2026-10-20',
+            appointmentTime: '10:00',
+            appointmentMonth: '2026-10',
+            priceType: 'ฟรี',
+            priceAmount: 0,
+            petStatus: 'รอดำเนินการ'
+          }
+        ]
+      },
+      {
+        bookingId: 'HN48261012001',
+        createdAt: '2026-10-10 14:15',
+        staffEmail: 'vet.mueangcm@dld.go.th',
+        ownerName: 'นายอนันต์ วงศ์สวัสดิ์ (ตัวแทนชุมชนวัดเกต)',
+        ownerAddress: '55 ถ.เจริญราษฎร์ ต.วัดเกต อ.เมืองเชียงใหม่ จ.เชียงใหม่',
+        phone: '081-789-3344',
+        nationalId: '-',
+        status: 'ผ่าตัดเสร็จสิ้น',
+        pets: [
+          {
+            petId: 'HN48261012001-P1',
+            petName: 'ด่างวัดเกต-01',
+            ownershipType: 'จรจัด',
+            species: 'สุนัข',
+            gender: 'เมีย',
+            ageYears: 3,
+            ageMonths: 0,
+            ageText: '3 ปี 0 เดือน',
+            breed: 'ผสม',
+            markings: 'สีขาว-ดำ หูพับข้างซ้าย',
+            appointmentDate: '2026-10-12',
+            appointmentTime: '10:00',
+            appointmentMonth: '2026-10',
+            priceType: 'ฟรี',
+            priceAmount: 0,
+            petStatus: 'ผ่าตัดเสร็จสิ้น'
+          },
+          {
+            petId: 'HN48261012001-P2',
+            petName: 'ส้มจี๊ด-02',
+            ownershipType: 'จรจัด',
+            species: 'แมว',
+            gender: 'ผู้',
+            ageYears: 1,
+            ageMonths: 2,
+            ageText: '1 ปี 2 เดือน',
+            breed: 'ผสม',
+            markings: 'สีส้มลายเสือ หางยาว',
+            appointmentDate: '2026-10-12',
+            appointmentTime: '10:30',
+            appointmentMonth: '2026-10',
+            priceType: 'ฟรี',
+            priceAmount: 0,
+            petStatus: 'ผ่าตัดเสร็จสิ้น'
+          }
+        ]
+      }
+    ];
+
+    // ==================== STATE MANAGEMENT ====================
+    let bookingsState = [];
+    let deletedBookingKeys = new Set();
+    let petDraftCards = [];
+    let nextPetDraftUid = 1;
+    let redirectAfterSave = false;
+    let editingBookingId = null;
+    let activeModalBookingId = null;
+    let pendingDeleteBookingId = null;
+    let speciesGenderChartInstance = null;
+    let ownershipPriceChartInstance = null;
+
+    const THAI_MONTH_NAMES = {
+      '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
+      '05': 'พฤษภาคม', '06': 'มิถุนายน', '07': 'กรกฎาคม', '08': 'สิงหาคม',
+      '09': 'กันยายน', '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม'
+    };
+
+    function formatMonthThai(yyyyMm) {
+      if (!yyyyMm || yyyyMm === 'ALL') return 'ทุกเดือน (ข้อมูลทั้งหมด)';
+      const parts = String(yyyyMm).split('-');
+      if (parts.length !== 2) return yyyyMm;
+      const buddhistYear = Number(parts[0]) + 543;
+      const monthName = THAI_MONTH_NAMES[parts[1]] || parts[1];
+      return monthName + ' ' + buddhistYear + ' (' + yyyyMm + ')';
+    }
+
+    function buildHN48QueueId(appointmentDateStr, seqNum) {
+      const bkk = getBangkokNowParts();
+      const fallbackDate = bkk.date;
+      const clean = normalizeDateStr(appointmentDateStr) || fallbackDate;
+      let yy = clean.substring(2, 4);
+      let mm = clean.substring(5, 7);
+      let dd = clean.substring(8, 10);
+      const seqStr = ('000' + Number(seqNum || 1)).slice(-3);
+      return 'HN48' + yy + mm + dd + seqStr;
+    }
+
+    function isOfficialHnCode(idStr) {
+      return /^HN48\d{9}$/.test(String(idStr || '').trim());
+    }
+
+    function getNextSequenceNumber() {
+      let maxSeq = 0;
+      bookingsState.forEach(function(b) {
+        const idStr = String(b.bookingId || '').trim();
+        if (b.status === 'ผ่าตัดเสร็จสิ้น' && isOfficialHnCode(idStr)) {
+          const val = parseInt(idStr.slice(-3), 10);
+          if (!isNaN(val) && val > maxSeq) maxSeq = val;
+        }
+      });
+      return maxSeq + 1;
+    }
+
+    function normalizeBookingsList(list) {
+      if (!Array.isArray(list)) return [];
+      const cleaned = [];
+      list.forEach(function(b) {
+        b.bookingId = String(b.bookingId || '').trim();
+        b.status = String(b.status || 'รอดำเนินการ').trim();
+        const ownerKey = String(b.ownerName || '').trim() + '|' + String(b.phone || '').trim();
+        if (deletedBookingKeys.has(b.bookingId) || (b.prevBookingId && deletedBookingKeys.has(b.prevBookingId)) || deletedBookingKeys.has(ownerKey)) {
+          return;
+        }
+        (b.pets || []).forEach(function(p) {
+          p.appointmentDate = normalizeDateStr(p.appointmentDate);
+          p.appointmentTime = normalizeTimeStr(p.appointmentTime);
+          if (!p.appointmentMonth && p.appointmentDate) {
+            p.appointmentMonth = p.appointmentDate.substring(0, 7);
+          }
+        });
+        cleaned.push(b);
+      });
+      return cleaned;
+    }
+
+    function createBlankPetDraft(templatePet) {
+      const bkk = getBangkokNowParts();
+      const defaultDate = templatePet ? templatePet.appointmentDate : bkk.date;
+      const defaultTime = templatePet ? templatePet.appointmentTime : bkk.time;
+      const defaultPriceType = templatePet ? templatePet.priceType : 'ฟรี';
+      const defaultPriceAmount = templatePet ? templatePet.priceAmount : 0;
+      const defaultOwnership = templatePet ? templatePet.ownershipType : 'มีเจ้าของ';
+
+      return {
+        uid: nextPetDraftUid++,
+        petName: '',
+        ownershipType: defaultOwnership,
+        species: 'สุนัข',
+        gender: 'เมีย',
+        ageYears: '',
+        ageMonths: '',
+        breedMode: 'ผสม',
+        breedCustom: '',
+        markings: '',
+        appointmentDate: defaultDate,
+        appointmentTime: defaultTime,
+        priceType: defaultPriceType,
+        priceAmount: defaultPriceAmount
+      };
+    }
+
+    // ==================== STORAGE, GAS & GITHUB PAGES REST API BRIDGE ====================
+    function isGasEnvironment() {
+      return typeof google !== 'undefined' && google.script && google.script.run;
+    }
+
+    function getConfiguredGasUrl() {
+      if (DEFAULT_GAS_EXEC_URL && DEFAULT_GAS_EXEC_URL.indexOf('script.google.com') !== -1) {
+        return DEFAULT_GAS_EXEC_URL.trim();
+      }
+      try {
+        const saved = localStorage.getItem(GAS_URL_STORAGE_KEY);
+        if (saved && saved.indexOf('script.google.com') !== -1) return saved.trim();
+      } catch (e) {}
+      return '';
+    }
+
+    function callGasRestApi(payloadObj, onSuccess, onError) {
+      const apiUrl = getConfiguredGasUrl();
+      if (!apiUrl) {
+        if (onError) onError(new Error('No GAS URL configured'));
+        return;
+      }
+      fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payloadObj),
+        redirect: 'follow'
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (onSuccess) onSuccess(data);
+        })
+        .catch(function(err) {
+          if (onError) onError(err);
+        });
+    }
+
+    function loadInitialBookings() {
+      if (isGasEnvironment()) {
+        document.getElementById('connectionBadge').innerHTML =
+          '<span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span> เชื่อมต่อ Google Sheets แล้ว (GMT+7)';
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res && Array.isArray(res.bookings)) {
+              bookingsState = normalizeBookingsList(res.bookings);
+              if (res.userEmail) {
+                document.getElementById('activeUserEmail').textContent = res.userEmail;
+              }
+              if (res.webAppUrl) {
+                const urlInput = document.getElementById('gasExecUrlInput');
+                if (urlInput && !urlInput.value) urlInput.value = res.webAppUrl;
+              }
+              refreshMonthDropdown();
+              updateNavBadge();
+              updateBookingLiveSummary();
+              renderDashboard();
+            }
+          })
+          .withFailureHandler(function(err) {
+            showToast('ไม่สามารถดึงข้อมูลจาก Google Sheet: ' + err.message);
+          })
+          .getInitialData();
+        return;
+      }
+
+      const apiUrl = getConfiguredGasUrl();
+      if (apiUrl) {
+        document.getElementById('connectionBadge').innerHTML =
+          '<span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span> เชื่อมต่อฐานข้อมูลผ่าน GitHub API แล้ว';
+        callGasRestApi(
+          { action: 'getInitialData' },
+          function(res) {
+            if (res && res.success && res.data && Array.isArray(res.data.bookings)) {
+              bookingsState = normalizeBookingsList(res.data.bookings);
+              saveLocalBookings();
+              refreshMonthDropdown();
+              updateNavBadge();
+              updateBookingLiveSummary();
+              renderDashboard();
+            }
+          },
+          function() {
+            loadLocalFallbackBookings();
+          }
+        );
+        return;
+      }
+
+      loadLocalFallbackBookings();
+    }
+
+    function loadLocalFallbackBookings() {
+      let stored = null;
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) stored = JSON.parse(raw);
+      } catch (e) {
+        stored = null;
+      }
+
+      if (stored && Array.isArray(stored) && stored.length > 0) {
+        bookingsState = normalizeBookingsList(stored);
+      } else {
+        bookingsState = normalizeBookingsList(JSON.parse(JSON.stringify(INITIAL_SAMPLE_BOOKINGS)));
+        saveLocalBookings();
+      }
+
+      refreshMonthDropdown();
+      updateNavBadge();
+      updateBookingLiveSummary();
+      renderDashboard();
+    }
+
+    function saveLocalBookings() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(bookingsState));
+      } catch (e) {}
+    }
+
+    function updateNavBadge() {
+      const badge = document.getElementById('navTotalBookingsBadge');
+      const completedBookings = bookingsState.filter(function(b) { return b.status === 'ผ่าตัดเสร็จสิ้น'; });
+      const totalPets = completedBookings.reduce(function(acc, b) { return acc + (b.pets ? b.pets.length : 0); }, 0);
+      if (badge) {
+        badge.textContent = 'ผ่าตัดเสร็จ ' + completedBookings.length + ' ราย (' + totalPets + ' ตัว)';
+      }
+    }
+
+    // ==================== NAVIGATION ====================
+    function switchView(viewName) {
+      const views = {
+        booking: document.getElementById('viewBooking'),
+        dashboard: document.getElementById('viewDashboard')
+      };
+      const buttons = {
+        booking: document.getElementById('tabBtnBooking'),
+        dashboard: document.getElementById('tabBtnDashboard')
+      };
+
+      Object.keys(views).forEach(function(key) {
+        if (!views[key] || !buttons[key]) return;
+        if (key === viewName) {
+          views[key].classList.remove('hidden');
+          buttons[key].className = 'w-full justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 bg-white text-teal-900 shadow-sm';
+        } else {
+          views[key].classList.add('hidden');
+          buttons[key].className = 'w-full justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 bg-white/10 text-white hover:bg-white/20';
+        }
+      });
+
+      if (viewName === 'dashboard') {
+        refreshMonthDropdown();
+        renderDashboard();
+      }
+    }
+
+    // ==================== PET CARDS RENDERING ====================
+    function renderPetCards() {
+      const container = document.getElementById('petsContainer');
+      container.innerHTML = '';
+
+      petDraftCards.forEach(function(pet, index) {
+        const cardNumber = index + 1;
+        const cardEl = document.createElement('div');
+        cardEl.className = 'pet-card-enter bg-white rounded-2xl shadow-sm border-2 border-teal-600/20 overflow-hidden';
+
+        const removeBtnHtml = petDraftCards.length > 1
+          ? '<button type="button" onclick="removePetCard(' + pet.uid + ')" class="px-3 py-1 rounded-lg text-xs font-bold bg-rose-500/20 text-rose-100 hover:bg-rose-500 hover:text-white transition">ลบสัตว์ตัวที่ ' + cardNumber + '</button>'
+          : '<span class="text-xs text-teal-100/80">สัตว์ตัวหลัก</span>';
+
+        const isCustomBreed = pet.breedMode === 'อื่นๆ';
+        const isPaidPrice = pet.priceType === 'ชำระเงิน';
+
+        cardEl.innerHTML =
+          '<div class="bg-teal-800 text-white px-5 py-3 flex flex-wrap items-center justify-between gap-2">' +
+            '<div class="flex items-center gap-2.5">' +
+              '<span class="px-2.5 py-0.5 rounded-lg bg-amber-400 text-slate-950 font-bold text-xs">สัตว์ตัวที่ ' + cardNumber + '</span>' +
+              '<h4 class="font-bold text-sm sm:text-base">ข้อมูลสัตว์สำหรับผ่าตัดทำหมัน</h4>' +
+            '</div>' +
+            '<div class="flex items-center gap-2">' +
+              removeBtnHtml +
+            '</div>' +
+          '</div>' +
+
+          '<div class="p-5 sm:p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">' +
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'ชื่อสัตว์ <span class="text-rose-600">* (บังคับใส่)</span>' +
+              '</label>' +
+              '<input type="text" value="' + escapeHtml(pet.petName) + '" ' +
+                'oninput="updatePetField(' + pet.uid + ', \'petName\', this.value)" ' +
+                'placeholder="เช่น ด่าง, มีมี่, ถุงทอง หรือ จร-01" ' +
+                'class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">' +
+            '</div>' +
+
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'ประเภท (มีเจ้าของ / จรจัด) <span class="text-rose-600">*</span>' +
+              '</label>' +
+              '<div class="grid grid-cols-2 gap-2">' +
+                '<button type="button" onclick="updatePetFieldAndRerender(' + pet.uid + ', \'ownershipType\', \'มีเจ้าของ\')" ' +
+                  'class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition ' +
+                  (pet.ownershipType === 'มีเจ้าของ' ? 'bg-teal-600 text-white border-teal-600 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+                  'บ้าน / มีเจ้าของ' +
+                '</button>' +
+                '<button type="button" onclick="updatePetFieldAndRerender(' + pet.uid + ', \'ownershipType\', \'จรจัด\')" ' +
+                  'class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition ' +
+                  (pet.ownershipType === 'จรจัด' ? 'bg-amber-600 text-white border-amber-600 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+                  'สัตว์จรจัด' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
+
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'ชนิด (สุนัข / แมว) <span class="text-rose-600">*</span>' +
+              '</label>' +
+              '<div class="grid grid-cols-2 gap-2">' +
+                '<button type="button" onclick="updatePetFieldAndRerender(' + pet.uid + ', \'species\', \'สุนัข\')" ' +
+                  'class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition ' +
+                  (pet.species === 'สุนัข' ? 'bg-teal-600 text-white border-teal-600 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+                  '🐕 สุนัข' +
+                '</button>' +
+                '<button type="button" onclick="updatePetFieldAndRerender(' + pet.uid + ', \'species\', \'แมว\')" ' +
+                  'class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition ' +
+                  (pet.species === 'แมว' ? 'bg-teal-600 text-white border-teal-600 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+                  '🐈 แมว' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
+
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'เพศ (ผู้ / เมีย) <span class="text-rose-600">*</span>' +
+              '</label>' +
+              '<div class="grid grid-cols-2 gap-2">' +
+                '<button type="button" onclick="updatePetFieldAndRerender(' + pet.uid + ', \'gender\', \'ผู้\')" ' +
+                  'class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition ' +
+                  (pet.gender === 'ผู้' ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+                  '♂ เพศผู้' +
+                '</button>' +
+                '<button type="button" onclick="updatePetFieldAndRerender(' + pet.uid + ', \'gender\', \'เมีย\')" ' +
+                  'class="py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold border transition ' +
+                  (pet.gender === 'เมีย' ? 'bg-pink-600 text-white border-pink-600 shadow-sm' : 'bg-slate-50 text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+                  '♀ เพศเมีย' +
+                '</button>' +
+              '</div>' +
+            '</div>' +
+
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'อายุ (ปี และ เดือน) <span class="text-rose-600">* (บังคับใส่)</span>' +
+              '</label>' +
+              '<div class="grid grid-cols-2 gap-2">' +
+                '<div class="relative">' +
+                  '<input type="number" min="0" max="30" value="' + escapeHtml(String(pet.ageYears)) + '" ' +
+                    'oninput="updatePetField(' + pet.uid + ', \'ageYears\', this.value)" ' +
+                    'placeholder="0" ' +
+                    'class="w-full rounded-xl border border-slate-300 pl-3 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">' +
+                  '<span class="absolute right-3 top-2.5 text-xs font-bold text-slate-500">ปี</span>' +
+                '</div>' +
+                '<div class="relative">' +
+                  '<input type="number" min="0" max="11" value="' + escapeHtml(String(pet.ageMonths)) + '" ' +
+                    'oninput="updatePetField(' + pet.uid + ', \'ageMonths\', this.value)" ' +
+                    'placeholder="0" ' +
+                    'class="w-full rounded-xl border border-slate-300 pl-3 pr-12 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">' +
+                  '<span class="absolute right-2.5 top-2.5 text-xs font-bold text-slate-500">เดือน</span>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'พันธุ์ (ผสม / อื่นๆ...) <span class="text-rose-600">*</span>' +
+              '</label>' +
+              '<div class="flex gap-2">' +
+                '<select onchange="updatePetFieldAndRerender(' + pet.uid + ', \'breedMode\', this.value)" ' +
+                  'class="rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-600 ' + (isCustomBreed ? 'w-2/5' : 'w-full') + '">' +
+                  '<option value="ผสม" ' + (!isCustomBreed ? 'selected' : '') + '>พันธุ์ผสม</option>' +
+                  '<option value="อื่นๆ" ' + (isCustomBreed ? 'selected' : '') + '>อื่นๆ (ระบุ...)</option>' +
+                '</select>' +
+                (isCustomBreed
+                  ? '<input type="text" value="' + escapeHtml(pet.breedCustom) + '" ' +
+                      'oninput="updatePetField(' + pet.uid + ', \'breedCustom\', this.value)" ' +
+                      'placeholder="ระบุสายพันธุ์ เช่น เปอร์เซีย, ชิวาวา" ' +
+                      'class="w-3/5 rounded-xl border border-teal-500 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">'
+                  : '') +
+              '</div>' +
+            '</div>' +
+
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'ตำหนิ (สี... / อื่นๆ...) <span class="text-slate-400 font-normal">(ไม่บังคับใส่)</span>' +
+              '</label>' +
+              '<input type="text" value="' + escapeHtml(pet.markings) + '" ' +
+                'oninput="updatePetField(' + pet.uid + ', \'markings\', this.value)" ' +
+                'placeholder="เช่น สีขาว-ดำ, สีส้ม, หางขอด, มีปลอกคอ" ' +
+                'class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">' +
+            '</div>' +
+
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'วัน เวลา ที่จองคิว <span class="text-rose-600">* (บังคับใส่)</span>' +
+              '</label>' +
+              '<div class="grid grid-cols-2 gap-2">' +
+                '<input type="date" value="' + escapeHtml(pet.appointmentDate) + '" ' +
+                  'onchange="updatePetField(' + pet.uid + ', \'appointmentDate\', this.value)" ' +
+                  'class="w-full rounded-xl border border-slate-300 px-2.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">' +
+                '<input type="time" value="' + escapeHtml(pet.appointmentTime) + '" ' +
+                  'onchange="updatePetField(' + pet.uid + ', \'appointmentTime\', this.value)" ' +
+                  'class="w-full rounded-xl border border-slate-300 px-2.5 py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">' +
+              '</div>' +
+            '</div>' +
+
+            '<div>' +
+              '<label class="block text-sm font-semibold text-slate-800 mb-1.5">' +
+                'ราคา (ฟรี / ...บาท) <span class="text-rose-600">* (บังคับใส่)</span>' +
+              '</label>' +
+              '<div class="flex gap-2">' +
+                '<select onchange="updatePetFieldAndRerender(' + pet.uid + ', \'priceType\', this.value)" ' +
+                  'class="rounded-xl border border-slate-300 px-3 py-2.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-teal-600 ' + (isPaidPrice ? 'w-1/2' : 'w-full') + '">' +
+                  '<option value="ฟรี" ' + (!isPaidPrice ? 'selected' : '') + '>ฟรี (0 บาท)</option>' +
+                  '<option value="ชำระเงิน" ' + (isPaidPrice ? 'selected' : '') + '>ระบุราคา (...บาท)</option>' +
+                '</select>' +
+                (isPaidPrice
+                  ? '<div class="relative w-1/2">' +
+                      '<input type="number" min="1" step="10" value="' + escapeHtml(String(pet.priceAmount || '')) + '" ' +
+                        'oninput="updatePetField(' + pet.uid + ', \'priceAmount\', this.value)" ' +
+                        'placeholder="จำนวนเงิน" ' +
+                        'class="w-full rounded-xl border border-teal-500 pl-3 pr-10 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-600">' +
+                      '<span class="absolute right-2.5 top-2.5 text-xs font-bold text-slate-500">บาท</span>' +
+                    '</div>'
+                  : '') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+
+        container.appendChild(cardEl);
+      });
+
+      updateBookingLiveSummary();
+    }
+
+    function updatePetField(uid, field, value) {
+      const target = petDraftCards.find(function(p) { return p.uid === uid; });
+      if (!target) return;
+      target[field] = value;
+      updateBookingLiveSummary();
+    }
+
+    function updatePetFieldAndRerender(uid, field, value) {
+      const target = petDraftCards.find(function(p) { return p.uid === uid; });
+      if (!target) return;
+      target[field] = value;
+      if (field === 'priceType' && value === 'ฟรี') {
+        target.priceAmount = 0;
+      }
+      renderPetCards();
+    }
+
+    function addPetCard() {
+      const firstPet = petDraftCards.length > 0 ? petDraftCards[petDraftCards.length - 1] : null;
+      petDraftCards.push(createBlankPetDraft(firstPet));
+      renderPetCards();
+      showToast('เพิ่มแบบฟอร์มสัตว์ตัวที่ ' + petDraftCards.length + ' (เจ้าของเดิม) แล้ว');
+    }
+
+    function removePetCard(uid) {
+      if (petDraftCards.length <= 1) return;
+      petDraftCards = petDraftCards.filter(function(p) { return p.uid !== uid; });
+      renderPetCards();
+      showToast('ลบรายการสัตว์ออกแล้ว (คงเหลือ ' + petDraftCards.length + ' ตัว)');
+    }
+
+    function updateBookingLiveSummary() {
+      const count = petDraftCards.length;
+      const totalCost = petDraftCards.reduce(function(sum, p) {
+        if (p.priceType === 'ฟรี') return sum;
+        const val = Number(p.priceAmount || 0);
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+
+      document.getElementById('currentPetCountBadge').textContent = String(count);
+      document.getElementById('summaryPetCountText').textContent = count + ' ตัว';
+      document.getElementById('summaryTotalPriceText').textContent =
+        totalCost === 0 ? 'ฟรี (0 บาท)' : totalCost.toLocaleString('th-TH') + ' บาท';
+
+      const previewEl = document.getElementById('liveQueueIdPreview');
+      if (previewEl) {
+        if (editingBookingId) {
+          previewEl.textContent = isOfficialHnCode(editingBookingId)
+            ? editingBookingId + ' (ผ่าตัดเสร็จแล้ว)'
+            : '⏳ รอออกรหัสเมื่อคลิกยืนยันผ่าตัดเสร็จ';
+        } else {
+          const bkk = getBangkokNowParts();
+          const primaryDate = (petDraftCards[0] && petDraftCards[0].appointmentDate) ? petDraftCards[0].appointmentDate : bkk.date;
+          const exampleCode = buildHN48QueueId(primaryDate, getNextSequenceNumber());
+          previewEl.textContent = '⏳ รอออกรหัสเมื่อผ่าตัดเสร็จ (คิวถัดไป: ' + exampleCode + ')';
+        }
+      }
+    }
+
+    function setSubmitRedirect(shouldRedirect) {
+      redirectAfterSave = Boolean(shouldRedirect);
+    }
+
+    // ==================== EDIT & DELETE WORKFLOWS ====================
+    function startEditBooking(bookingId) {
+      const record = bookingsState.find(function(b) { return b.bookingId === bookingId; });
+      if (!record) return;
+
+      closeDetailModal();
+      editingBookingId = record.bookingId;
+
+      document.getElementById('ownerName').value = record.ownerName || '';
+      document.getElementById('ownerAddress').value = record.ownerAddress || '';
+      document.getElementById('ownerPhone').value = record.phone || '';
+      document.getElementById('ownerNationalId').value = (record.nationalId && record.nationalId !== '-') ? record.nationalId : '';
+
+      const bkk = getBangkokNowParts();
+      petDraftCards = (record.pets || []).map(function(p) {
+        const isDefaultMix = !p.breed || p.breed === 'ผสม';
+        return {
+          uid: nextPetDraftUid++,
+          petName: p.petName || '',
+          ownershipType: p.ownershipType || 'มีเจ้าของ',
+          species: p.species || 'สุนัข',
+          gender: p.gender || 'เมีย',
+          ageYears: p.ageYears != null ? p.ageYears : 0,
+          ageMonths: p.ageMonths != null ? p.ageMonths : 0,
+          breedMode: isDefaultMix ? 'ผสม' : 'อื่นๆ',
+          breedCustom: isDefaultMix ? '' : p.breed,
+          markings: (p.markings && p.markings !== '-') ? p.markings : '',
+          appointmentDate: normalizeDateStr(p.appointmentDate) || bkk.date,
+          appointmentTime: normalizeTimeStr(p.appointmentTime) || bkk.time,
+          priceType: p.priceType || 'ฟรี',
+          priceAmount: p.priceAmount || 0
+        };
+      });
+
+      if (petDraftCards.length === 0) {
+        petDraftCards = [createBlankPetDraft(null)];
+      }
+
+      document.getElementById('editModeBanner').classList.remove('hidden');
+      document.getElementById('editingBookingIdLabel').textContent = record.bookingId;
+      document.getElementById('btnCancelEditBottom').classList.remove('hidden');
+      document.getElementById('btnSubmitStayText').textContent = 'บันทึกการแก้ไขข้อมูล';
+      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกการแก้ไข และกลับหน้า Dashboard';
+      document.getElementById('tabBookingLabel').textContent = '1. แก้ไขคิว (' + record.bookingId + ')';
+
+      renderPetCards();
+      switchView('booking');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('เข้าสู่โหมดแก้ไขข้อมูลรหัสคิว ' + record.bookingId);
+    }
+
+    function cancelEditBooking() {
+      editingBookingId = null;
+      document.getElementById('editModeBanner').classList.add('hidden');
+      document.getElementById('btnCancelEditBottom').classList.add('hidden');
+      document.getElementById('btnSubmitStayText').textContent = 'บันทึกข้อมูลคิวนี้';
+      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกข้อมูล และไปหน้า Dashboard';
+      document.getElementById('tabBookingLabel').textContent = '1. จองคิวผ่าตัดทำหมัน (กรอกประวัติ)';
+      resetBookingForm(true);
+      switchView('dashboard');
+    }
+
+    function editFromModal() {
+      if (!activeModalBookingId) return;
+      startEditBooking(activeModalBookingId);
+    }
+
+    function openDeleteConfirmModal(bookingId) {
+      const record = bookingsState.find(function(b) { return String(b.bookingId) === String(bookingId); });
+      if (!record) return;
+      pendingDeleteBookingId = record.bookingId;
+      document.getElementById('deleteConfirmText').textContent =
+        'คุณต้องการลบข้อมูลของ "' + record.ownerName + '" (' + (record.pets ? record.pets.length : 0) + ' ตัว • สถานะ: ' + record.status + ') ออกจากระบบใช่หรือไม่?';
+      document.getElementById('deleteConfirmModal').classList.remove('hidden');
+    }
+
+    function closeDeleteConfirmModal() {
+      pendingDeleteBookingId = null;
+      document.getElementById('deleteConfirmModal').classList.add('hidden');
+    }
+
+    function deleteFromModal() {
+      if (!activeModalBookingId) return;
+      const targetId = activeModalBookingId;
+      closeDetailModal();
+      openDeleteConfirmModal(targetId);
+    }
+
+    function confirmDeleteBooking() {
+      if (!pendingDeleteBookingId) return;
+      const targetId = String(pendingDeleteBookingId);
+      const record = bookingsState.find(function(b) { return String(b.bookingId) === targetId || String(b.prevBookingId || '') === targetId; });
+      const ownerName = record ? String(record.ownerName || '').trim() : '';
+      const phone = record ? String(record.phone || '').trim() : '';
+      deletedBookingKeys.add(targetId);
+      if (record && record.bookingId) deletedBookingKeys.add(String(record.bookingId));
+      if (record && record.prevBookingId) deletedBookingKeys.add(String(record.prevBookingId));
+      if (ownerName) deletedBookingKeys.add(ownerName + '|' + phone);
+      closeDeleteConfirmModal();
+
+      bookingsState = bookingsState.filter(function(b) {
+        if (String(b.bookingId) === targetId || String(b.prevBookingId || '') === targetId) return false;
+        if (ownerName && String(b.ownerName || '').trim() === ownerName && String(b.phone || '').trim() === phone) return false;
+        return true;
+      });
+      saveLocalBookings();
+      if (editingBookingId === targetId) cancelEditBooking();
+      updateNavBadge();
+      refreshMonthDropdown();
+      renderDashboard();
+      showToast('ลบข้อมูลของ "' + (ownerName || targetId) + '" เรียบร้อยแล้ว');
+
+      if (isGasEnvironment()) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res && res.success && res.data && Array.isArray(res.data.bookings)) {
+              bookingsState = normalizeBookingsList(res.data.bookings);
+              updateNavBadge();
+              refreshMonthDropdown();
+              renderDashboard();
+            }
+          })
+          .withFailureHandler(function(err) {
+            showToast('แจ้งเตือนฐานข้อมูล: ' + err.message);
+          })
+          .deleteBookingRecord(targetId, ownerName, phone);
+      } else if (getConfiguredGasUrl()) {
+        callGasRestApi({
+          action: 'deleteBookingRecord',
+          bookingId: targetId,
+          ownerName: ownerName,
+          phone: phone
+        }, function(res) {
+          if (res && res.success && res.data && Array.isArray(res.data.bookings)) {
+            bookingsState = normalizeBookingsList(res.data.bookings);
+            saveLocalBookings();
+            updateNavBadge();
+            refreshMonthDropdown();
+            renderDashboard();
+          }
+        });
+      }
+    }
+
+    // ==================== FORM VALIDATION & SUBMISSION ====================
+    function handleFormSubmit(event) {
+      event.preventDefault();
+      const errors = [];
+
+      const ownerName = document.getElementById('ownerName').value.trim();
+      const ownerAddress = document.getElementById('ownerAddress').value.trim();
+      const ownerPhone = document.getElementById('ownerPhone').value.trim();
+      const ownerNationalId = document.getElementById('ownerNationalId').value.trim();
+
+      if (!ownerName) errors.push('กรุณากรอก ชื่อ-สกุล เจ้าของสัตว์');
+      if (!ownerAddress) errors.push('กรุณากรอก ที่อยู่เจ้าของสัตว์');
+      if (!ownerPhone) errors.push('กรุณากรอก เบอร์โทรศัพท์');
+
+      const normalizedPets = [];
+
+      petDraftCards.forEach(function(pet, idx) {
+        const label = 'สัตว์ตัวที่ ' + (idx + 1);
+        const petName = String(pet.petName || '').trim();
+        if (!petName) errors.push(label + ': กรุณากรอก ชื่อสัตว์');
+
+        const yearsRaw = String(pet.ageYears).trim();
+        const monthsRaw = String(pet.ageMonths).trim();
+        if (yearsRaw === '' || monthsRaw === '') {
+          errors.push(label + ': กรุณากรอก อายุทั้งช่อง (ปี) และ (เดือน) เช่น 1 ปี 0 เดือน');
+        }
+
+        const breedFinal = pet.breedMode === 'อื่นๆ' ? String(pet.breedCustom || '').trim() : 'ผสม';
+        if (!breedFinal) {
+          errors.push(label + ': กรุณาระบุสายพันธุ์');
+        }
+
+        const apptDate = normalizeDateStr(pet.appointmentDate);
+        const apptTime = normalizeTimeStr(pet.appointmentTime);
+        if (!apptDate || !apptTime) {
+          errors.push(label + ': กรุณาเลือก วัน และ เวลา ที่จองคิว');
+        }
+
+        let priceVal = 0;
+        if (pet.priceType === 'ชำระเงิน') {
+          priceVal = Number(pet.priceAmount);
+          if (!priceVal || priceVal <= 0) {
+            errors.push(label + ': กรุณาระบุจำนวนเงิน (บาท)');
+          }
+        }
+
+        const yNum = Number(yearsRaw || 0);
+        const mNum = Number(monthsRaw || 0);
+
+        normalizedPets.push({
+          petName: petName,
+          ownershipType: pet.ownershipType,
+          species: pet.species,
+          gender: pet.gender,
+          ageYears: yNum,
+          ageMonths: mNum,
+          ageText: yNum + ' ปี ' + mNum + ' เดือน',
+          breed: breedFinal,
+          markings: String(pet.markings || '').trim() || '-',
+          appointmentDate: apptDate,
+          appointmentTime: apptTime,
+          appointmentMonth: apptDate.substring(0, 7),
+          priceType: pet.priceType,
+          priceAmount: priceVal,
+          petStatus: 'รอดำเนินการ'
+        });
+      });
+
+      const errorBox = document.getElementById('formErrorBox');
+      const errorList = document.getElementById('formErrorList');
+
+      if (errors.length > 0) {
+        errorList.innerHTML = errors.map(function(err) { return '<li>' + escapeHtml(err) + '</li>'; }).join('');
+        errorBox.classList.remove('hidden');
+        errorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      errorBox.classList.add('hidden');
+
+      if (editingBookingId) {
+        const existingRec = bookingsState.find(function(b) { return b.bookingId === editingBookingId; });
+        const currentStatus = existingRec ? existingRec.status : 'รอดำเนินการ';
+        const updatePayload = {
+          bookingId: editingBookingId,
+          ownerName: ownerName,
+          ownerAddress: ownerAddress,
+          phone: ownerPhone,
+          nationalId: ownerNationalId || '-',
+          status: currentStatus,
+          pets: normalizedPets
+        };
+
+        if (isGasEnvironment()) {
+          google.script.run
+            .withSuccessHandler(function(res) {
+              if (res && res.success) {
+                bookingsState = normalizeBookingsList(res.data.bookings);
+                onUpdateBookingSuccess(editingBookingId);
+              }
+            })
+            .withFailureHandler(function(err) {
+              showToast('เกิดข้อผิดพลาดในการแก้ไข: ' + err.message);
+            })
+            .updateBookingRecord(updatePayload);
+        } else if (getConfiguredGasUrl()) {
+          callGasRestApi({ action: 'updateBookingRecord', payload: updatePayload }, function(res) {
+            if (res && res.success && res.data) {
+              bookingsState = normalizeBookingsList(res.data.bookings);
+              saveLocalBookings();
+              onUpdateBookingSuccess(editingBookingId);
+            }
+          });
+        } else {
+          if (existingRec) {
+            existingRec.ownerName = updatePayload.ownerName;
+            existingRec.ownerAddress = updatePayload.ownerAddress;
+            existingRec.phone = updatePayload.phone;
+            existingRec.nationalId = updatePayload.nationalId;
+            existingRec.pets = normalizedPets.map(function(p, i) {
+              p.petId = editingBookingId + '-P' + (i + 1);
+              return p;
+            });
+          }
+          saveLocalBookings();
+          onUpdateBookingSuccess(editingBookingId);
+        }
+        return;
+      }
+
+      const payload = {
+        ownerName: ownerName,
+        ownerAddress: ownerAddress,
+        phone: ownerPhone,
+        nationalId: ownerNationalId || '-',
+        pets: normalizedPets
+      };
+
+      if (isGasEnvironment()) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res && res.success) {
+              bookingsState = normalizeBookingsList(res.data.bookings);
+              onSaveBookingSuccess(res.bookingId);
+            }
+          })
+          .withFailureHandler(function(err) {
+            showToast('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
+          })
+          .saveBookingRecord(payload);
+      } else if (getConfiguredGasUrl()) {
+        callGasRestApi({ action: 'saveBookingRecord', payload: payload }, function(res) {
+          if (res && res.success && res.data) {
+            bookingsState = normalizeBookingsList(res.data.bookings);
+            saveLocalBookings();
+            onSaveBookingSuccess(res.bookingId);
+          }
+        });
+      } else {
+        const bkk = getBangkokNowParts();
+        const newBookingId = 'WAIT-' + Date.now().toString().slice(-8);
+
+        const newRecord = {
+          bookingId: newBookingId,
+          createdAt: bkk.full,
+          staffEmail: document.getElementById('activeUserEmail').textContent,
+          ownerName: payload.ownerName,
+          ownerAddress: payload.ownerAddress,
+          phone: payload.phone,
+          nationalId: payload.nationalId,
+          status: 'รอดำเนินการ',
+          pets: normalizedPets.map(function(p, i) {
+            p.petId = newBookingId + '-P' + (i + 1);
+            return p;
+          })
+        };
+
+        bookingsState.unshift(newRecord);
+        saveLocalBookings();
+        onSaveBookingSuccess(newBookingId);
+      }
+    }
+
+    function onSaveBookingSuccess(bookingId) {
+      updateNavBadge();
+      refreshMonthDropdown();
+      renderDashboard();
+      resetBookingForm(true);
+      showToast('บันทึกคิวนัดผ่าตัดสำเร็จ! (รหัส HN48 จะรันเริ่มจาก 001 เมื่อคลิกยืนยันผ่าตัดเสร็จสิ้น)');
+
+      if (redirectAfterSave) {
+        switchView('dashboard');
+        openDetailModal(bookingId);
+      }
+    }
+
+    function onUpdateBookingSuccess(bookingId) {
+      const savedId = bookingId;
+      editingBookingId = null;
+      document.getElementById('editModeBanner').classList.add('hidden');
+      document.getElementById('btnCancelEditBottom').classList.add('hidden');
+      document.getElementById('btnSubmitStayText').textContent = 'บันทึกข้อมูลคิวนี้';
+      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกข้อมูล และไปหน้า Dashboard';
+      document.getElementById('tabBookingLabel').textContent = '1. จองคิวผ่าตัดทำหมัน (กรอกประวัติ)';
+
+      updateNavBadge();
+      refreshMonthDropdown();
+      renderDashboard();
+      resetBookingForm(true);
+      showToast('อัปเดตข้อมูลรหัสคิว ' + savedId + ' เรียบร้อยแล้ว');
+
+      if (redirectAfterSave) {
+        switchView('dashboard');
+      }
+    }
+
+    function resetBookingForm(silent) {
+      document.getElementById('ownerName').value = '';
+      document.getElementById('ownerAddress').value = '';
+      document.getElementById('ownerPhone').value = '';
+      document.getElementById('ownerNationalId').value = '';
+      document.getElementById('formErrorBox').classList.add('hidden');
+
+      petDraftCards = [createBlankPetDraft(null)];
+      renderPetCards();
+      if (!silent) {
+        showToast('ล้างข้อมูลในแบบฟอร์มเรียบร้อยแล้ว');
+      }
+    }
+
+    // ==================== DASHBOARD, SEARCH & MONTHLY FILTERING ====================
+    function syncSearchInputs(val) {
+      const topInput = document.getElementById('filterSearch');
+      const tableInput = document.getElementById('tableQuickSearch');
+      if (topInput && topInput.value !== val) topInput.value = val;
+      if (tableInput && tableInput.value !== val) tableInput.value = val;
+      renderDashboard();
+    }
+
+    function resetDashboardFilters() {
+      document.getElementById('filterMonth').value = 'ALL';
+      document.getElementById('filterSpecies').value = 'ALL';
+      document.getElementById('filterOwnership').value = 'ALL';
+      document.getElementById('filterStatus').value = 'ALL';
+      document.getElementById('filterSearch').value = '';
+      document.getElementById('tableQuickSearch').value = '';
+      renderDashboard();
+      showToast('ล้างตัวกรองและคำค้นหาทั้งหมดแล้ว');
+    }
+
+    function refreshMonthDropdown() {
+      const select = document.getElementById('filterMonth');
+      const currentVal = select.value || 'ALL';
+      const bkk = getBangkokNowParts();
+      const monthSet = new Set([bkk.date.substring(0, 7)]);
+
+      bookingsState.forEach(function(b) {
+        (b.pets || []).forEach(function(p) {
+          if (p.appointmentMonth) monthSet.add(p.appointmentMonth);
+        });
+      });
+
+      const sortedMonths = Array.from(monthSet).sort().reverse();
+      select.innerHTML = '<option value="ALL">ทุกเดือน (ข้อมูลทั้งหมด)</option>';
+      sortedMonths.forEach(function(ym) {
+        const opt = document.createElement('option');
+        opt.value = ym;
+        opt.textContent = formatMonthThai(ym);
+        select.appendChild(opt);
+      });
+
+      if (sortedMonths.indexOf(currentVal) !== -1 || currentVal === 'ALL') {
+        select.value = currentVal;
+      }
+    }
+
+    function getFilteredBookings(forceOnlyCompleted) {
+      const monthFilter = document.getElementById('filterMonth').value;
+      const speciesFilter = document.getElementById('filterSpecies').value;
+      const ownershipFilter = document.getElementById('filterOwnership').value;
+      const statusEl = document.getElementById('filterStatus');
+      const statusFilter = statusEl ? statusEl.value : 'ALL';
+      const searchStr = document.getElementById('filterSearch').value.trim().toLowerCase();
+
+      const filteredBookings = [];
+
+      bookingsState.forEach(function(b) {
+        if (forceOnlyCompleted) {
+          if (b.status !== 'ผ่าตัดเสร็จสิ้น') return;
+        } else {
+          if (statusFilter !== 'ALL' && b.status !== statusFilter) return;
+        }
+
+        const matchingPets = (b.pets || []).filter(function(p) {
+          if (monthFilter !== 'ALL' && p.appointmentMonth !== monthFilter) return false;
+          if (speciesFilter !== 'ALL' && p.species !== speciesFilter) return false;
+          if (ownershipFilter !== 'ALL' && p.ownershipType !== ownershipFilter) return false;
+          return true;
+        });
+
+        if (matchingPets.length === 0) return;
+
+        if (searchStr) {
+          const ownerMatch =
+            b.ownerName.toLowerCase().indexOf(searchStr) !== -1 ||
+            b.phone.toLowerCase().indexOf(searchStr) !== -1 ||
+            b.bookingId.toLowerCase().indexOf(searchStr) !== -1 ||
+            b.ownerAddress.toLowerCase().indexOf(searchStr) !== -1 ||
+            String(b.nationalId || '').toLowerCase().indexOf(searchStr) !== -1;
+
+          const petMatch = matchingPets.some(function(p) {
+            return p.petName.toLowerCase().indexOf(searchStr) !== -1 ||
+                   p.breed.toLowerCase().indexOf(searchStr) !== -1 ||
+                   String(p.markings || '').toLowerCase().indexOf(searchStr) !== -1;
+          });
+
+          if (!ownerMatch && !petMatch) return;
+        }
+
+        filteredBookings.push({
+          booking: b,
+          matchedPets: matchingPets
+        });
+      });
+
+      return filteredBookings;
+    }
+
+    function renderDashboard() {
+      const monthFilter = document.getElementById('filterMonth').value;
+      const tableFiltered = getFilteredBookings(false);
+      const completedOnlyFiltered = getFilteredBookings(true);
+
+      let completedOwners = completedOnlyFiltered.length;
+      let totalPets = 0;
+      let dogCount = 0;
+      let catCount = 0;
+      let dogMale = 0, dogFemale = 0, catMale = 0, catFemale = 0;
+      let ownedCount = 0, strayCount = 0;
+      let maleCount = 0, femaleCount = 0;
+      let freeCount = 0, paidCount = 0;
+      let totalRevenue = 0;
+
+      completedOnlyFiltered.forEach(function(item) {
+        item.matchedPets.forEach(function(p) {
+          totalPets++;
+          if (p.species === 'สุนัข') {
+            dogCount++;
+            if (p.gender === 'ผู้') dogMale++; else dogFemale++;
+          } else {
+            catCount++;
+            if (p.gender === 'ผู้') catMale++; else catFemale++;
+          }
+
+          if (p.ownershipType === 'มีเจ้าของ') ownedCount++; else strayCount++;
+          if (p.gender === 'ผู้') maleCount++; else femaleCount++;
+
+          if (p.priceType === 'ฟรี' || Number(p.priceAmount) === 0) {
+            freeCount++;
+          } else {
+            paidCount++;
+            totalRevenue += Number(p.priceAmount || 0);
+          }
+        });
+      });
+
+      document.getElementById('kpiOwnersCount').textContent = completedOwners + ' ราย';
+      const qBreakEl = document.getElementById('kpiQueueStatusBreakdown');
+      if (qBreakEl) {
+        qBreakEl.textContent = 'นับเฉพาะเคสยืนยันผ่าตัดเสร็จสิ้นแล้ว';
+      }
+      document.getElementById('kpiMonthLabel').textContent = formatMonthThai(monthFilter);
+      document.getElementById('kpiPetsCount').textContent = totalPets + ' ตัว';
+      document.getElementById('kpiSpeciesBreakdown').textContent = 'สุนัข ' + dogCount + ' ตัว • แมว ' + catCount + ' ตัว';
+      document.getElementById('kpiOwnershipBreakdown').textContent = 'มีเจ้าของ ' + ownedCount + ' • จรจัด ' + strayCount;
+      document.getElementById('kpiGenderBreakdown').textContent = 'เพศผู้ ' + maleCount + ' ตัว • เพศเมีย ' + femaleCount + ' ตัว';
+      document.getElementById('kpiTotalRevenue').textContent = totalRevenue.toLocaleString('th-TH') + ' บาท';
+      document.getElementById('kpiPriceBreakdown').textContent = 'บริการฟรี ' + freeCount + ' ตัว • มีค่าใช้จ่าย ' + paidCount + ' ตัว';
+
+      const tablePetsCount = tableFiltered.reduce(function(acc, item) { return acc + item.matchedPets.length; }, 0);
+      document.getElementById('tableResultCount').textContent = 'แสดงในตาราง ' + tableFiltered.length + ' ราย (' + tablePetsCount + ' ตัว)';
+
+      renderCharts(dogMale, dogFemale, catMale, catFemale, ownedCount, strayCount, freeCount, paidCount);
+      renderDashboardTable(tableFiltered);
+    }
+
+    function renderCharts(dogMale, dogFemale, catMale, catFemale, ownedCount, strayCount, freeCount, paidCount) {
+      if (typeof Chart === 'undefined') return;
+
+      const ctx1 = document.getElementById('speciesGenderChart').getContext('2d');
+      if (speciesGenderChartInstance) speciesGenderChartInstance.destroy();
+      speciesGenderChartInstance = new Chart(ctx1, {
+        type: 'bar',
+        data: {
+          labels: ['สุนัข (เพศผู้)', 'สุนัข (เพศเมีย)', 'แมว (เพศผู้)', 'แมว (เพศเมีย)'],
+          datasets: [{
+            label: 'จำนวนสัตว์ผ่าตัดเสร็จสิ้น (ตัว)',
+            data: [dogMale, dogFemale, catMale, catFemale],
+            backgroundColor: ['#0d9488', '#14b8a6', '#f59e0b', '#fbbf24'],
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+          }
+        }
+      });
+
+      const ctx2 = document.getElementById('ownershipPriceChart').getContext('2d');
+      if (ownershipPriceChartInstance) ownershipPriceChartInstance.destroy();
+      ownershipPriceChartInstance = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['สัตว์มีเจ้าของ', 'สัตว์จรจัด', 'บริการฟรี', 'มีค่าใช้จ่าย'],
+          datasets: [{
+            data: [ownedCount, strayCount, freeCount, paidCount],
+            backgroundColor: ['#0f766e', '#d97706', '#10b981', '#3b82f6']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    function renderDashboardTable(filtered) {
+      const tbody = document.getElementById('dashboardTableBody');
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        tbody.innerHTML =
+          '<tr><td colspan="9" class="py-10 text-center text-slate-500">' +
+            'ไม่พบข้อมูลการจองคิวที่ตรงกับคำค้นหาหรือตัวกรองที่เลือก' +
+          '</td></tr>';
+        return;
+      }
+
+      filtered.forEach(function(item) {
+        const b = item.booking;
+        const pets = item.matchedPets;
+        const firstPet = pets[0] || {};
+        const cleanDate = normalizeDateStr(firstPet.appointmentDate) || '-';
+        const cleanTime = normalizeTimeStr(firstPet.appointmentTime) || '-';
+
+        const totalCost = pets.reduce(function(acc, p) {
+          return acc + (p.priceType === 'ฟรี' ? 0 : Number(p.priceAmount || 0));
+        }, 0);
+
+        const petTags = pets.map(function(p) {
+          const badgeColor = p.species === 'สุนัข'
+            ? 'bg-teal-50 text-teal-800 border-teal-200'
+            : 'bg-amber-50 text-amber-800 border-amber-200';
+          return '<span class="inline-block px-2 py-0.5 rounded-md text-xs font-medium border mr-1 mb-1 ' + badgeColor + '">' +
+            escapeHtml(p.petName) + ' (' + escapeHtml(p.species) + '/' + escapeHtml(p.gender) + ' • ' + escapeHtml(p.ownershipType) + ')' +
+          '</span>';
+        }).join('');
+
+        let statusClass = 'bg-amber-100 text-amber-900 border-amber-300';
+        if (b.status === 'ผ่าตัดเสร็จสิ้น') statusClass = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+        if (b.status === 'ยกเลิกคิว') statusClass = 'bg-rose-100 text-rose-900 border-rose-300';
+
+        const donePetsCount = (b.pets || []).filter(function(p) {
+          const pStat = p.petStatus || (b.status === 'ผ่าตัดเสร็จสิ้น' ? 'ผ่าตัดเสร็จสิ้น' : 'รอดำเนินการ');
+          return pStat === 'ผ่าตัดเสร็จสิ้น';
+        }).length;
+
+        let progressMeta = '<div class="text-[11px] text-slate-500 mt-1">ผ่าตัดแล้ว ' + donePetsCount + '/' + (b.pets || []).length + ' ตัว</div>';
+        if (b.status === 'ผ่าตัดเสร็จสิ้น') {
+          progressMeta = '<div class="text-[11px] text-emerald-700 font-semibold mt-1">✓ นับรวมใน Dashboard แล้ว' + (b.completedAt ? '<br><span class="text-[10px] text-slate-500">(' + escapeHtml(b.completedAt) + ')</span>' : '') + '</div>';
+        } else if (b.status === 'ยกเลิกคิว') {
+          progressMeta = '<div class="text-[11px] text-rose-600 font-semibold mt-1">✕ ยกเลิกคิว (ไม่นับรวม)</div>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50 transition';
+        const hasOfficialHn = b.status === 'ผ่าตัดเสร็จสิ้น' && isOfficialHnCode(b.bookingId);
+        let queueIdCellHtml = '';
+        if (hasOfficialHn) {
+          queueIdCellHtml =
+            '<button type="button" onclick="openDetailModal(\'' + escapeHtml(b.bookingId) + '\')" class="font-bold font-mono text-teal-800 hover:underline text-left text-sm">' +
+              escapeHtml(b.bookingId) +
+            '</button>' +
+            '<div class="text-[10px] text-emerald-700 font-semibold">✓ ออกรหัสแล้ว</div>';
+        } else if (b.status === 'ยกเลิกคิว') {
+          queueIdCellHtml =
+            '<div class="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-2 py-1 inline-block">✕ ยกเลิกคิว</div>' +
+            '<div class="text-[10px] text-slate-400 mt-0.5">สามารถกดปุ่มลบออกได้</div>';
+        } else {
+          queueIdCellHtml =
+            '<div class="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1 inline-block">⏳ รอออกรหัส HN48</div>' +
+            '<div class="text-[10px] text-slate-500 mt-0.5">รันเมื่อคลิกยืนยันผ่าตัดเสร็จ</div>';
+        }
+
+        tr.innerHTML =
+          '<td class="py-3.5 px-3.5 whitespace-nowrap">' +
+            queueIdCellHtml +
+          '</td>' +
+          '<td class="py-3.5 px-3.5 text-xs whitespace-nowrap">' +
+            '<div class="font-bold text-slate-800">' + escapeHtml(cleanDate) + '</div>' +
+            '<div class="text-slate-500">เวลา ' + escapeHtml(cleanTime) + ' น.</div>' +
+          '</td>' +
+          '<td class="py-3.5 px-3.5">' +
+            '<div class="font-bold text-slate-900">' + escapeHtml(b.ownerName) + '</div>' +
+            '<div class="text-xs text-slate-500 truncate max-w-[220px]">' + escapeHtml(b.ownerAddress) + '</div>' +
+          '</td>' +
+          '<td class="py-3.5 px-3.5 whitespace-nowrap text-xs font-semibold text-slate-700">' + escapeHtml(b.phone) + '</td>' +
+          '<td class="py-3.5 px-3.5 text-center whitespace-nowrap">' +
+            '<span class="inline-flex items-center justify-center whitespace-nowrap px-2.5 py-1 rounded-full text-xs font-bold bg-slate-900 text-white">' + pets.length + ' ตัว</span>' +
+          '</td>' +
+          '<td class="py-3.5 px-3.5">' + petTags + '</td>' +
+          '<td class="py-3.5 px-3.5 text-right font-bold whitespace-nowrap ' + (totalCost === 0 ? 'text-emerald-700' : 'text-slate-900') + '">' +
+            (totalCost === 0 ? 'ฟรี' : totalCost.toLocaleString('th-TH') + ' บาท') +
+          '</td>' +
+          '<td class="py-3.5 px-3.5 text-center whitespace-nowrap">' +
+            '<select aria-label="เปลี่ยนสถานะคิว" onchange="handleQuickTableStatusChange(\'' + escapeHtml(b.bookingId) + '\', this.value)" ' +
+              'class="rounded-full border px-2.5 py-1 text-xs font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-teal-500 ' + statusClass + '">' +
+              '<option value="รอดำเนินการ" ' + (b.status === 'รอดำเนินการ' ? 'selected' : '') + '>⏳ รอดำเนินการ</option>' +
+              '<option value="ผ่าตัดเสร็จสิ้น" ' + (b.status === 'ผ่าตัดเสร็จสิ้น' ? 'selected' : '') + '>✓ ผ่าตัดเสร็จสิ้น</option>' +
+              '<option value="ยกเลิกคิว" ' + (b.status === 'ยกเลิกคิว' ? 'selected' : '') + '>✕ ยกเลิกคิว</option>' +
+            '</select>' +
+            progressMeta +
+          '</td>' +
+          '<td class="py-3.5 px-3.5 text-center whitespace-nowrap">' +
+            '<div class="inline-flex items-center gap-1.5">' +
+              '<button type="button" onclick="openDetailModal(\'' + escapeHtml(b.bookingId) + '\')" ' +
+                'class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition shadow-sm">' +
+                'ดูข้อมูล' +
+              '</button>' +
+              '<button type="button" onclick="startEditBooking(\'' + escapeHtml(b.bookingId) + '\')" ' +
+                'class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-600 transition shadow-sm">' +
+                'แก้ไข' +
+              '</button>' +
+              '<button type="button" onclick="openDeleteConfirmModal(\'' + escapeHtml(b.bookingId) + '\')" ' +
+                'class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-rose-600 text-white hover:bg-rose-700 transition shadow-sm">' +
+                'ลบ' +
+              '</button>' +
+            '</div>' +
+          '</td>';
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ==================== INDIVIDUAL DETAIL MODAL ====================
+    function openDetailModal(bookingId) {
+      const record = bookingsState.find(function(b) { return String(b.bookingId) === String(bookingId); });
+      if (!record) return;
+
+      activeModalBookingId = record.bookingId;
+      const displayHn = (record.status === 'ผ่าตัดเสร็จสิ้น' && isOfficialHnCode(record.bookingId))
+        ? record.bookingId
+        : 'รอออกรหัส HN48 (เมื่อผ่าตัดเสร็จ)';
+      document.getElementById('modalBookingIdBadge').textContent = displayHn;
+      document.getElementById('modalStatusBadge').textContent = record.status;
+      document.getElementById('modalStatusSelect').value = record.status;
+
+      const totalCost = (record.pets || []).reduce(function(sum, p) {
+        return sum + (p.priceType === 'ฟรี' ? 0 : Number(p.priceAmount || 0));
+      }, 0);
+
+      const petsRowsHtml = (record.pets || []).map(function(p, idx) {
+        const priceDisplay = (p.priceType === 'ฟรี' || Number(p.priceAmount) === 0)
+          ? '<span class="text-emerald-700 font-bold">ฟรี (0 บาท)</span>'
+          : '<span class="text-slate-900 font-bold">' + Number(p.priceAmount).toLocaleString('th-TH') + ' บาท</span>';
+
+        const petStat = p.petStatus || (record.status === 'ผ่าตัดเสร็จสิ้น' ? 'ผ่าตัดเสร็จสิ้น' : 'รอดำเนินการ');
+        const isPetDone = petStat === 'ผ่าตัดเสร็จสิ้น';
+        const cleanDate = normalizeDateStr(p.appointmentDate) || '-';
+        const cleanTime = normalizeTimeStr(p.appointmentTime) || '-';
+
+        return (
+          '<div class="rounded-2xl border ' + (isPetDone ? 'border-emerald-300 bg-emerald-50/30' : 'border-slate-200 bg-slate-50/70') + ' p-4 space-y-3">' +
+            '<div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-2.5">' +
+              '<div class="flex items-center gap-2">' +
+                '<span class="px-2.5 py-0.5 rounded-lg bg-teal-700 text-white text-xs font-bold">สัตว์ตัวที่ ' + (idx + 1) + '</span>' +
+                '<span class="font-bold text-base text-slate-900">ชื่อสัตว์: ' + escapeHtml(p.petName) + '</span>' +
+              '</div>' +
+              '<div class="flex flex-wrap items-center gap-2">' +
+                '<div class="text-xs font-semibold text-teal-800 bg-teal-100 px-3 py-1 rounded-full">' +
+                  'วัน-เวลาจองคิว: ' + escapeHtml(cleanDate) + ' เวลา ' + escapeHtml(cleanTime) + ' น.' +
+                '</div>' +
+                '<button type="button" onclick="togglePetSurgeryStatus(\'' + escapeHtml(record.bookingId) + '\', ' + idx + ')" ' +
+                  'class="no-print px-3 py-1 rounded-full text-xs font-bold border transition ' +
+                  (isPetDone
+                    ? 'bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700'
+                    : 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-emerald-600 hover:text-white hover:border-emerald-600') + '">' +
+                  (isPetDone ? '✓ ผ่าตัดเสร็จสิ้นแล้ว (คลิกเพื่อเปลี่ยน)' : '⏳ รอผ่าตัด (คลิกยืนยันผ่าตัดเสร็จ)') +
+                '</button>' +
+              '</div>' +
+            '</div>' +
+
+            '<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs sm:text-sm">' +
+              '<div><span class="text-slate-500 block text-xs">ประเภท</span><strong class="text-slate-900">' + escapeHtml(p.ownershipType) + '</strong></div>' +
+              '<div><span class="text-slate-500 block text-xs">ชนิด</span><strong class="text-slate-900">' + escapeHtml(p.species) + '</strong></div>' +
+              '<div><span class="text-slate-500 block text-xs">เพศ</span><strong class="text-slate-900">' + escapeHtml(p.gender) + '</strong></div>' +
+              '<div><span class="text-slate-500 block text-xs">อายุ (ปี และ เดือน)</span><strong class="text-slate-900">' + escapeHtml(p.ageYears + ' ปี ' + p.ageMonths + ' เดือน') + '</strong></div>' +
+              '<div><span class="text-slate-500 block text-xs">พันธุ์</span><strong class="text-slate-900">' + escapeHtml(p.breed) + '</strong></div>' +
+              '<div class="sm:col-span-2"><span class="text-slate-500 block text-xs">ตำหนิ / สี</span><strong class="text-slate-900">' + escapeHtml(p.markings || '-') + '</strong></div>' +
+              '<div><span class="text-slate-500 block text-xs">ราคา</span>' + priceDisplay + '</div>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      document.getElementById('modalBodyContent').innerHTML =
+        '<div class="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">' +
+          '<div>' +
+            '<h4 class="font-bold text-base text-teal-900">สำนักงานปศุสัตว์อำเภอเมืองเชียงใหม่</h4>' +
+            '<p class="text-xs text-slate-500">ใบสรุปประวัติการจองคิวผ่าตัดทำหมัน • รหัส <strong class="font-mono text-slate-800">' + escapeHtml(displayHn) + '</strong> • บันทึกเมื่อ ' + escapeHtml(record.createdAt) + '</p>' +
+          '</div>' +
+          '<div class="text-right">' +
+            '<div class="text-xs text-slate-500">รวมค่าบริการทั้งหมด (' + record.pets.length + ' ตัว)</div>' +
+            '<div class="text-lg font-bold text-teal-700">' + (totalCost === 0 ? 'ฟรี (0 บาท)' : totalCost.toLocaleString('th-TH') + ' บาท') + '</div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="bg-white rounded-2xl border border-slate-200 p-4">' +
+          '<h5 class="text-xs font-bold uppercase tracking-wider text-teal-700 mb-3">ข้อมูลเจ้าของสัตว์</h5>' +
+          '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">' +
+            '<div><span class="text-slate-500 text-xs block">ชื่อ-สกุล เจ้าของสัตว์:</span><strong class="text-slate-900">' + escapeHtml(record.ownerName) + '</strong></div>' +
+            '<div><span class="text-slate-500 text-xs block">เบอร์โทรศัพท์:</span><strong class="text-slate-900">' + escapeHtml(record.phone) + '</strong></div>' +
+            '<div><span class="text-slate-500 text-xs block">ที่อยู่เจ้าของสัตว์:</span><strong class="text-slate-900">' + escapeHtml(record.ownerAddress) + '</strong></div>' +
+            '<div><span class="text-slate-500 text-xs block">เลขบัตรประชาชน:</span><strong class="text-slate-900">' + escapeHtml(record.nationalId || '-') + '</strong></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="space-y-3">' +
+          '<h5 class="text-xs font-bold uppercase tracking-wider text-teal-700">รายการสัตว์ที่เข้ารับการผ่าตัดทำหมันของเจ้าของรายนี้ (' + record.pets.length + ' ตัว)</h5>' +
+          petsRowsHtml +
+        '</div>';
+
+      document.getElementById('detailModal').classList.remove('hidden');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.add('hidden');
+      activeModalBookingId = null;
+    }
+
+    function assignHn48OnCompletion(target) {
+      if (!isOfficialHnCode(target.bookingId)) {
+        const bkk = getBangkokNowParts();
+        const apptDate = (target.pets && target.pets[0] && target.pets[0].appointmentDate)
+          ? normalizeDateStr(target.pets[0].appointmentDate)
+          : bkk.date;
+        const nextSeq = getNextSequenceNumber();
+        const newHnId = buildHN48QueueId(apptDate, nextSeq);
+        target.bookingId = newHnId;
+        (target.pets || []).forEach(function(p, idx) {
+          p.petId = newHnId + '-P' + (idx + 1);
+        });
+      }
+      return target.bookingId;
+    }
+
+    function applyBookingStatusChange(bookingId, newStatus) {
+      const target = bookingsState.find(function(b) { return String(b.bookingId) === String(bookingId); });
+      if (!target) return;
+
+      const oldId = target.bookingId;
+      target.status = newStatus;
+
+      if (newStatus === 'ผ่าตัดเสร็จสิ้น') {
+        target.completedAt = getBangkokNowParts().full + ' น.';
+        (target.pets || []).forEach(function(p) { p.petStatus = 'ผ่าตัดเสร็จสิ้น'; });
+        assignHn48OnCompletion(target);
+      } else {
+        target.completedAt = '';
+        (target.pets || []).forEach(function(p) { p.petStatus = newStatus; });
+        if (!isGasEnvironment() && !getConfiguredGasUrl() && isOfficialHnCode(target.bookingId)) {
+          target.bookingId = 'WAIT-' + Date.now().toString().slice(-8);
+        }
+      }
+
+      saveLocalBookings();
+      updateNavBadge();
+      renderDashboard();
+      updateBookingLiveSummary();
+
+      if (activeModalBookingId === oldId) {
+        activeModalBookingId = target.bookingId;
+        document.getElementById('modalStatusBadge').textContent = newStatus;
+        document.getElementById('modalStatusSelect').value = newStatus;
+        openDetailModal(target.bookingId);
+      }
+
+      if (isGasEnvironment()) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res && res.data && Array.isArray(res.data.bookings)) {
+              bookingsState = normalizeBookingsList(res.data.bookings);
+              updateNavBadge();
+              renderDashboard();
+              updateBookingLiveSummary();
+              const finalCode = res.assignedBookingId || target.bookingId;
+              showToast(newStatus === 'ผ่าตัดเสร็จสิ้น'
+                ? 'ยืนยันผ่าตัดเสร็จสิ้น! ออกรหัสคิว: ' + finalCode
+                : 'อัปเดตสถานะเป็น "' + newStatus + '" แล้ว');
+            }
+          })
+          .updateBookingStatus(oldId, newStatus);
+      } else if (getConfiguredGasUrl()) {
+        callGasRestApi({
+          action: 'updateBookingStatus',
+          bookingId: oldId,
+          newStatus: newStatus
+        }, function(res) {
+          if (res && res.success && res.data && Array.isArray(res.data.bookings)) {
+            bookingsState = normalizeBookingsList(res.data.bookings);
+            saveLocalBookings();
+            updateNavBadge();
+            renderDashboard();
+            updateBookingLiveSummary();
+            const finalCode = res.assignedBookingId || target.bookingId;
+            showToast(newStatus === 'ผ่าตัดเสร็จสิ้น'
+              ? 'ยืนยันผ่าตัดเสร็จสิ้น! ออกรหัสคิว: ' + finalCode
+              : 'อัปเดตสถานะเป็น "' + newStatus + '" แล้ว');
+          }
+        });
+      } else {
+        showToast(newStatus === 'ผ่าตัดเสร็จสิ้น'
+          ? 'ยืนยันผ่าตัดเสร็จสิ้น! ระบบออกรหัสคิว: ' + target.bookingId + ' เรียบร้อยแล้ว'
+          : 'อัปเดตสถานะเป็น "' + newStatus + '" แล้ว');
+      }
+    }
+
+    function handleModalStatusChange(newStatus) {
+      if (!activeModalBookingId) return;
+      applyBookingStatusChange(activeModalBookingId, newStatus);
+    }
+
+    function handleQuickTableStatusChange(bookingId, newStatus) {
+      applyBookingStatusChange(bookingId, newStatus);
+    }
+
+    function togglePetSurgeryStatus(bookingId, petIndex) {
+      const target = bookingsState.find(function(b) { return String(b.bookingId) === String(bookingId); });
+      if (!target || !target.pets || !target.pets[petIndex]) return;
+
+      const pet = target.pets[petIndex];
+      const currentStat = pet.petStatus || (target.status === 'ผ่าตัดเสร็จสิ้น' ? 'ผ่าตัดเสร็จสิ้น' : 'รอดำเนินการ');
+      pet.petStatus = currentStat === 'ผ่าตัดเสร็จสิ้น' ? 'รอดำเนินการ' : 'ผ่าตัดเสร็จสิ้น';
+
+      const allDone = target.pets.every(function(p) {
+        return p.petStatus === 'ผ่าตัดเสร็จสิ้น';
+      });
+
+      if (allDone) {
+        applyBookingStatusChange(bookingId, 'ผ่าตัดเสร็จสิ้น');
+      } else {
+        target.status = 'รอดำเนินการ';
+        target.completedAt = '';
+        saveLocalBookings();
+        updateNavBadge();
+        openDetailModal(target.bookingId);
+        renderDashboard();
+        showToast('อัปเดตสถานะผ่าตัดของ "' + pet.petName + '" เป็น "' + pet.petStatus + '" แล้ว');
+      }
+    }
+
+    // ==================== EXPORT CSV & GITHUB PAGES PWA HELPERS ====================
+    function exportFilteredCsv() {
+      const filtered = getFilteredBookings(true);
+      if (filtered.length === 0) {
+        showToast('ไม่มีข้อมูลเคสที่ผ่าตัดเสร็จสิ้นสำหรับส่งออกในเดือนที่เลือก');
+        return;
+      }
+
+      const headers = [
+        'รหัสคิว (HN48)', 'ชื่อ-สกุล เจ้าของสัตว์', 'ที่อยู่', 'เบอร์โทรศัพท์', 'เลขบัตรประชาชน',
+        'ชื่อสัตว์', 'ประเภท', 'ชนิด', 'เพศ', 'อายุ(ปี)', 'อายุ(เดือน)', 'พันธุ์',
+        'ตำหนิ/สี', 'วันที่จองคิว', 'เวลาที่จองคิว', 'ประเภทราคา', 'ราคา(บาท)', 'สถานะ'
+      ];
+      const rows = [headers.join(',')];
+
+      filtered.forEach(function(item) {
+        const b = item.booking;
+        item.matchedPets.forEach(function(p) {
+          const cols = [
+            b.bookingId, b.ownerName, b.ownerAddress, b.phone, b.nationalId,
+            p.petName, p.ownershipType, p.species, p.gender, p.ageYears, p.ageMonths, p.breed,
+            p.markings, normalizeDateStr(p.appointmentDate), normalizeTimeStr(p.appointmentTime), p.priceType, p.priceAmount, b.status
+          ].map(function(val) {
+            return '"' + String(val == null ? '' : val).replace(/"/g, '""') + '"';
+          });
+          rows.push(cols.join(','));
+        });
+      });
+
+      const csvContent = '\uFEFF' + rows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'สรุปผ่าตัดทำหมัน_ปศุสัตว์เมืองเชียงใหม่.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      showToast('ดาวน์โหลดไฟล์ CSV (เฉพาะเคสผ่าตัดเสร็จสิ้น) เรียบร้อยแล้ว');
+    }
+
+    function copyCodeBlock(textareaId, successMessage) {
+      const el = document.getElementById(textareaId);
+      if (!el) return;
+      el.select();
+      try {
+        document.execCommand('copy');
+        showToast(successMessage);
+      } catch (e) {
+        showToast('กรุณากด Ctrl+C เพื่อคัดลอก');
+      }
+    }
+
+    let deferredPwaPrompt = null;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPwaPrompt = e;
+      const btnWrap = document.getElementById('nativeInstallBtnWrapper');
+      if (btnWrap) btnWrap.classList.remove('hidden');
+    });
+
+    function openInstallModal() {
+      const input = document.getElementById('gasExecUrlInput');
+      if (input && !input.value) {
+        const saved = getConfiguredGasUrl();
+        if (saved) {
+          input.value = saved;
+        } else if (window.location.href.indexOf('script.google.com') !== -1) {
+          input.value = window.location.href.split('?')[0];
+        }
+      }
+      document.getElementById('installAppModal').classList.remove('hidden');
+    }
+
+    function closeInstallModal() {
+      document.getElementById('installAppModal').classList.add('hidden');
+    }
+
+    function triggerNativePwaInstall() {
+      if (!deferredPwaPrompt) return;
+      deferredPwaPrompt.prompt();
+      deferredPwaPrompt.userChoice.then(function() {
+        deferredPwaPrompt = null;
+        document.getElementById('nativeInstallBtnWrapper').classList.add('hidden');
+      });
+    }
+
+    function saveGasApiUrlFromModal() {
+      const rawUrl = document.getElementById('gasExecUrlInput').value.trim();
+      if (!rawUrl || rawUrl.indexOf('script.google.com') === -1) {
+        showToast('กรุณาวางลิงก์ https://script.google.com/macros/s/.../exec ที่ถูกต้อง');
+        return;
+      }
+      try {
+        localStorage.setItem(GAS_URL_STORAGE_KEY, rawUrl);
+      } catch (e) {}
+      showToast('บันทึกการเชื่อมต่อฐานข้อมูล Google Sheets เรียบร้อยแล้ว กำลังดึงข้อมูล...');
+      closeInstallModal();
+      loadInitialBookings();
+    }
+
+    function downloadPwaManifestFile() {
+      const svgIcon = "data:image/svg+xml;utf8," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" rx="110" fill="#0f766e"/><circle cx="256" cy="295" r="88" fill="#ffffff"/><circle cx="145" cy="175" r="36" fill="#ffffff"/><circle cx="215" cy="135" r="36" fill="#ffffff"/><circle cx="297" cy="135" r="36" fill="#ffffff"/><circle cx="367" cy="175" r="36" fill="#ffffff"/></svg>');
+      const manifestObj = {
+        name: "ระบบการจองคิวผ่าตัดทำหมันสัตว์ - ปศุสัตว์เมืองเชียงใหม่",
+        short_name: "จองคิวทำหมัน",
+        description: "ระบบการจองคิวผ่าตัดทำหมันสุนัขและแมว สำนักงานปศุสัตว์อำเภอเมืองเชียงใหม่",
+        start_url: "./index.html",
+        scope: "./",
+        display: "standalone",
+        orientation: "portrait-primary",
+        background_color: "#0f766e",
+        theme_color: "#0f766e",
+        icons: [
+          { src: "./icon-192.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+          { src: "./icon-512.png", sizes: "512x512", type: "image/png", purpose: "any maskable" },
+          { src: svgIcon, sizes: "512x512", type: "image/svg+xml", purpose: "any" }
+        ]
+      };
+      const blob = new Blob([JSON.stringify(manifestObj, null, 2)], { type: 'application/json;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'manifest.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('ดาวน์โหลดไฟล์ manifest.json เรียบร้อยแล้ว');
+    }
+
+    function downloadPwaSwFile() {
+      const swCode = [
+        "const CACHE_NAME = 'dld-cm-spay-neuter-v2';",
+        "self.addEventListener('install', function(e) { self.skipWaiting(); });",
+        "self.addEventListener('activate', function(e) { e.waitUntil(self.clients.claim()); });",
+        "self.addEventListener('fetch', function(e) {",
+        "  if (e.request.method !== 'GET') return;",
+        "  if (e.request.url.indexOf('script.google.com') !== -1) return;",
+        "  e.respondWith(fetch(e.request).catch(function() { return caches.match(e.request); }));",
+        "});"
+      ].join('\n');
+      const blob = new Blob([swCode], { type: 'application/javascript;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'sw.js';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('ดาวน์โหลดไฟล์ sw.js เรียบร้อยแล้ว');
+    }
+
+    function downloadGithubPagesIndexHtml() {
+      const rawUrl = document.getElementById('gasExecUrlInput').value.trim();
+      const helperEl = document.getElementById('canvasCopyHelper');
+      const wasVisible = helperEl && !helperEl.classList.contains('hidden');
+      if (helperEl) helperEl.classList.add('hidden');
+      let fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      if (helperEl && wasVisible) helperEl.classList.remove('hidden');
+
+      if (rawUrl && rawUrl.indexOf('script.google.com') !== -1) {
+        fullHtml = fullHtml.replace("const DEFAULT_GAS_EXEC_URL = '';", "const DEFAULT_GAS_EXEC_URL = '" + rawUrl.replace(/'/g, "\\'") + "';");
+      }
+
+      const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('ดาวน์โหลดไฟล์ index.html สำหรับนำขึ้น GitHub Pages เรียบร้อยแล้ว');
+    }
+
+    function copyCurrentIndexHtml() {
+      const helperEl = document.getElementById('canvasCopyHelper');
+      const wasVisible = helperEl && !helperEl.classList.contains('hidden');
+      if (helperEl) helperEl.classList.add('hidden');
+      const fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      if (helperEl && wasVisible) helperEl.classList.remove('hidden');
+
+      const temp = document.createElement('textarea');
+      temp.value = fullHtml;
+      document.body.appendChild(temp);
+      temp.select();
+      try {
+        document.execCommand('copy');
+        showToast('คัดลอกโค้ด Index.html ทั้งไฟล์เรียบร้อยแล้ว!');
+      } catch (e) {
+        showToast('ไม่สามารถคัดลอกอัตโนมัติได้ กรุณาใช้ไฟล์จากแพ็กเกจ ZIP');
+      }
+      document.body.removeChild(temp);
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const text = document.getElementById('toastMessage');
+      text.textContent = msg;
+      container.classList.remove('hidden');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function() {
+        container.classList.add('hidden');
+      }, 3500);
+    }
+
+    function escapeHtml(str) {
+      return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ==================== INITIALIZE ON LOAD ====================
+    window.onload = function() {
+      if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0 && window.location.hostname.indexOf('script.google.com') === -1 && window.location.hostname.indexOf('googleusercontent.com') === -1) {
+        navigator.serviceWorker.register('./sw.js').catch(function() {});
+      }
+
+      document.getElementById('codeGsTextarea').value = "/**\n * \u0e23\u0e30\u0e1a\u0e1a\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e17\u0e33\u0e2b\u0e21\u0e31\u0e19\u0e2a\u0e31\u0e15\u0e27\u0e4c - \u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e1b\u0e28\u0e38\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e2d\u0e33\u0e40\u0e20\u0e2d\u0e40\u0e21\u0e37\u0e2d\u0e07\u0e40\u0e0a\u0e35\u0e22\u0e07\u0e43\u0e2b\u0e21\u0e48\n * \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e01\u0e32\u0e23\u0e23\u0e31\u0e19\u0e1a\u0e19 Google Apps Script \u0e42\u0e14\u0e22\u0e15\u0e23\u0e07 \u0e41\u0e25\u0e30\u0e01\u0e32\u0e23\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d\u0e1c\u0e48\u0e32\u0e19 GitHub Pages (PWA REST API)\n * \u0e40\u0e02\u0e15\u0e40\u0e27\u0e25\u0e32: Asia/Bangkok (GMT+7)\n * \u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27 (\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e40\u0e04\u0e2a\u0e17\u0e35\u0e48\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\u0e41\u0e25\u0e49\u0e27): HN48 + \u0e1b\u0e35 \u0e04.\u0e28.(2 \u0e2b\u0e25\u0e31\u0e01\u0e17\u0e49\u0e32\u0e22) + \u0e40\u0e14\u0e37\u0e2d\u0e19(2 \u0e2b\u0e25\u0e31\u0e01) + \u0e27\u0e31\u0e19\u0e19\u0e31\u0e14(2 \u0e2b\u0e25\u0e31\u0e01) + \u0e25\u0e33\u0e14\u0e31\u0e1a(3 \u0e2b\u0e25\u0e31\u0e01 \u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01 001)\n */\n\nconst CONFIG = {\n  APP_TITLE: '\u0e23\u0e30\u0e1a\u0e1a\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e17\u0e33\u0e2b\u0e21\u0e31\u0e19 - \u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e1b\u0e28\u0e38\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e2d\u0e33\u0e40\u0e20\u0e2d\u0e40\u0e21\u0e37\u0e2d\u0e07\u0e40\u0e0a\u0e35\u0e22\u0e07\u0e43\u0e2b\u0e21\u0e48',\n  SPREADSHEET_ID: '1J9Lzra8Vaq_c-8hotM1KEgLxV9P9h9Ql47ycQiGo14U',\n  SHEET_PETS: '\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27_\u0e23\u0e32\u0e22\u0e15\u0e31\u0e27',\n  SHEET_OWNERS: '\u0e2a\u0e23\u0e38\u0e1b\u0e23\u0e32\u0e22\u0e0a\u0e37\u0e48\u0e2d\u0e1c\u0e39\u0e49\u0e08\u0e2d\u0e07',\n  TIMEZONE: 'Asia/Bangkok'\n};\n\nconst DEMO_OWNER_NAMES = [\n  '\u0e19\u0e32\u0e22\u0e01\u0e34\u0e15\u0e15\u0e34\u0e1e\u0e07\u0e29\u0e4c \u0e19\u0e31\u0e19\u0e17\u0e02\u0e27\u0e49\u0e32\u0e07',\n  '\u0e19\u0e32\u0e07\u0e04\u0e33\u0e1b\u0e31\u0e19 \u0e2a\u0e38\u0e02\u0e40\u0e01\u0e29\u0e21',\n  '\u0e19\u0e32\u0e22\u0e2d\u0e19\u0e31\u0e19\u0e15\u0e4c \u0e27\u0e07\u0e28\u0e4c\u0e2a\u0e27\u0e31\u0e2a\u0e14\u0e34\u0e4c (\u0e15\u0e31\u0e27\u0e41\u0e17\u0e19\u0e0a\u0e38\u0e21\u0e0a\u0e19\u0e27\u0e31\u0e14\u0e40\u0e01\u0e15)',\n  '\u0e19\u0e32\u0e07\u0e2a\u0e32\u0e27\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e0a\u0e19\u0e01 \u0e40\u0e08\u0e23\u0e34\u0e0d\u0e23\u0e32\u0e29\u0e0e\u0e23\u0e4c'\n];\n\nfunction getTargetSpreadsheet() {\n  try {\n    const active = SpreadsheetApp.getActiveSpreadsheet();\n    if (active) return active;\n  } catch (e) {}\n  return SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);\n}\n\n/**\n * \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e01\u0e32\u0e23\u0e40\u0e1b\u0e34\u0e14\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e27\u0e47\u0e1a\u0e1b\u0e01\u0e15\u0e34 \u0e41\u0e25\u0e30 JSON API (?action=getInitialData) \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a GitHub Pages\n */\nfunction doGet(e) {\n  initDatabase();\n\n  if (e && e.parameter && e.parameter.action === 'getInitialData') {\n    const data = getInitialData();\n    return ContentService.createTextOutput(JSON.stringify({\n      success: true,\n      data: data\n    })).setMimeType(ContentService.MimeType.JSON);\n  }\n\n  const template = HtmlService.createTemplateFromFile('Index');\n  return template.evaluate()\n    .setTitle(CONFIG.APP_TITLE)\n    .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no')\n    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);\n}\n\n/**\n * \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e04\u0e33\u0e2a\u0e31\u0e48\u0e07\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01/\u0e41\u0e01\u0e49\u0e44\u0e02/\u0e25\u0e1a/\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e2a\u0e16\u0e32\u0e19\u0e30 \u0e08\u0e32\u0e01\u0e41\u0e2d\u0e1b\u0e1a\u0e19 GitHub Pages \u0e1c\u0e48\u0e32\u0e19 fetch POST\n */\nfunction doPost(e) {\n  try {\n    initDatabase();\n    const bodyStr = (e && e.postData && e.postData.contents) ? e.postData.contents : '{}';\n    const req = JSON.parse(bodyStr);\n    const action = String(req.action || '');\n    let result = { success: false, message: 'Unknown action' };\n\n    if (action === 'getInitialData') {\n      result = { success: true, data: getInitialData() };\n    } else if (action === 'saveBookingRecord') {\n      result = saveBookingRecord(req.payload || {});\n    } else if (action === 'updateBookingRecord') {\n      result = updateBookingRecord(req.payload || {});\n    } else if (action === 'deleteBookingRecord') {\n      result = deleteBookingRecord(req.bookingId, req.ownerName, req.phone);\n    } else if (action === 'updateBookingStatus') {\n      result = updateBookingStatus(req.bookingId, req.newStatus, req.petStatuses);\n    }\n\n    return ContentService.createTextOutput(JSON.stringify(result))\n      .setMimeType(ContentService.MimeType.JSON);\n  } catch (err) {\n    return ContentService.createTextOutput(JSON.stringify({\n      success: false,\n      error: String(err && err.message ? err.message : err)\n    })).setMimeType(ContentService.MimeType.JSON);\n  }\n}\n\n/**\n * \u0e2a\u0e23\u0e49\u0e32\u0e07\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27 HN48 + YY + MM + DD + \u0e25\u0e33\u0e14\u0e31\u0e1a 3 \u0e2b\u0e25\u0e31\u0e01 (\u0e40\u0e23\u0e34\u0e48\u0e21\u0e19\u0e31\u0e1a\u0e08\u0e32\u0e01 001 \u0e40\u0e09\u0e1e\u0e32\u0e30\u0e40\u0e04\u0e2a\u0e17\u0e35\u0e48\u0e21\u0e35\u0e23\u0e2b\u0e31\u0e2a HN48 \u0e41\u0e25\u0e30\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\u0e41\u0e25\u0e49\u0e27\u0e40\u0e17\u0e48\u0e32\u0e19\u0e31\u0e49\u0e19)\n */\nfunction generateHN48QueueId(appointmentDateStr, ownerSheet) {\n  const tz = CONFIG.TIMEZONE;\n  const now = new Date();\n  let yy = Utilities.formatDate(now, tz, 'yy');\n  let mm = Utilities.formatDate(now, tz, 'MM');\n  let dd = Utilities.formatDate(now, tz, 'dd');\n\n  const cleanDate = formatDateOnly(appointmentDateStr);\n  if (cleanDate && /^\\d{4}-\\d{2}-\\d{2}$/.test(cleanDate)) {\n    yy = cleanDate.substring(2, 4);\n    mm = cleanDate.substring(5, 7);\n    dd = cleanDate.substring(8, 10);\n  }\n\n  let maxSeq = 0;\n  if (ownerSheet && ownerSheet.getLastRow() > 1) {\n    const rows = ownerSheet.getRange(2, 1, ownerSheet.getLastRow() - 1, 13).getValues();\n    for (let i = 0; i < rows.length; i++) {\n      const idStr = String(rows[i][0] || '').trim();\n      const statusStr = String(rows[i][12] || '').trim();\n      // \u0e19\u0e31\u0e1a\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e23\u0e2b\u0e31\u0e2a\u0e17\u0e35\u0e48\u0e02\u0e36\u0e49\u0e19\u0e15\u0e49\u0e19\u0e14\u0e49\u0e27\u0e22 HN48 \u0e15\u0e32\u0e21\u0e14\u0e49\u0e27\u0e22\u0e15\u0e31\u0e27\u0e40\u0e25\u0e02 9 \u0e2b\u0e25\u0e31\u0e01 \u0e41\u0e25\u0e30\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e40\u0e1b\u0e47\u0e19 \"\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\" \u0e40\u0e17\u0e48\u0e32\u0e19\u0e31\u0e49\u0e19 (\u0e44\u0e21\u0e48\u0e19\u0e33\u0e23\u0e2b\u0e31\u0e2a WAIT-... \u0e21\u0e32\u0e19\u0e31\u0e1a\u0e40\u0e14\u0e47\u0e14\u0e02\u0e32\u0e14)\n      if (statusStr === '\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19' && /^HN48\\d{9}$/.test(idStr)) {\n        const num = parseInt(idStr.slice(-3), 10);\n        if (!isNaN(num) && num > maxSeq) {\n          maxSeq = num;\n        }\n      }\n    }\n  }\n\n  const nextSeq = maxSeq + 1;\n  return 'HN48' + yy + mm + dd + ('000' + nextSeq).slice(-3);\n}\n\n/**\n * \u0e2a\u0e23\u0e49\u0e32\u0e07\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34 \u0e25\u0e49\u0e32\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e15\u0e31\u0e27\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e40\u0e14\u0e34\u0e21 \u0e41\u0e25\u0e30\u0e0b\u0e48\u0e2d\u0e21\u0e41\u0e0b\u0e21\u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a\u0e40\u0e27\u0e25\u0e32/\u0e25\u0e33\u0e14\u0e31\u0e1a\u0e23\u0e2b\u0e31\u0e2a HN48 \u0e43\u0e2b\u0e49\u0e40\u0e23\u0e34\u0e48\u0e21\u0e19\u0e31\u0e1a\u0e08\u0e32\u0e01 001 \u0e2d\u0e22\u0e48\u0e32\u0e07\u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07\n */\nfunction initDatabase() {\n  const ss = getTargetSpreadsheet();\n\n  let petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n  if (!petSheet) {\n    petSheet = ss.insertSheet(CONFIG.SHEET_PETS);\n    const petHeaders = [\n      '\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27 (Booking_ID)',           // 0\n      '\u0e23\u0e2b\u0e31\u0e2a\u0e2a\u0e31\u0e15\u0e27\u0e4c (Pet_ID)',             // 1\n      '\u0e27\u0e31\u0e19\u0e40\u0e27\u0e25\u0e32\u0e17\u0e35\u0e48\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 (Created_At)',   // 2\n      '\u0e1c\u0e39\u0e49\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 (Staff_Email)',         // 3\n      '\u0e0a\u0e37\u0e48\u0e2d-\u0e2a\u0e01\u0e38\u0e25 \u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c',          // 4\n      '\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c',             // 5\n      '\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c',                  // 6\n      '\u0e40\u0e25\u0e02\u0e1a\u0e31\u0e15\u0e23\u0e1b\u0e23\u0e30\u0e0a\u0e32\u0e0a\u0e19',                // 7\n      '\u0e0a\u0e37\u0e48\u0e2d\u0e2a\u0e31\u0e15\u0e27\u0e4c',                      // 8\n      '\u0e1b\u0e23\u0e30\u0e40\u0e20\u0e17 (\u0e21\u0e35\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07/\u0e08\u0e23\u0e08\u0e31\u0e14)',       // 9\n      '\u0e0a\u0e19\u0e34\u0e14 (\u0e2a\u0e38\u0e19\u0e31\u0e02/\u0e41\u0e21\u0e27)',               // 10\n      '\u0e40\u0e1e\u0e28 (\u0e1c\u0e39\u0e49/\u0e40\u0e21\u0e35\u0e22)',                 // 11\n      '\u0e2d\u0e32\u0e22\u0e38 (\u0e1b\u0e35)',                      // 12\n      '\u0e2d\u0e32\u0e22\u0e38 (\u0e40\u0e14\u0e37\u0e2d\u0e19)',                   // 13\n      '\u0e2d\u0e32\u0e22\u0e38\u0e23\u0e27\u0e21',                        // 14\n      '\u0e1e\u0e31\u0e19\u0e18\u0e38\u0e4c',                         // 15\n      '\u0e15\u0e33\u0e2b\u0e19\u0e34/\u0e2a\u0e35',                       // 16\n      '\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27 (YYYY-MM-DD)',       // 17\n      '\u0e40\u0e27\u0e25\u0e32\u0e17\u0e35\u0e48\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27',                  // 18\n      '\u0e40\u0e14\u0e37\u0e2d\u0e19\u0e17\u0e35\u0e48\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27 (YYYY-MM)',        // 19\n      '\u0e1b\u0e23\u0e30\u0e40\u0e20\u0e17\u0e23\u0e32\u0e04\u0e32 (\u0e1f\u0e23\u0e35/\u0e0a\u0e33\u0e23\u0e30\u0e40\u0e07\u0e34\u0e19)',      // 20\n      '\u0e23\u0e32\u0e04\u0e32 (\u0e1a\u0e32\u0e17)',                     // 21\n      '\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e04\u0e34\u0e27'                        // 22\n    ];\n    petSheet.appendRow(petHeaders);\n    petSheet.getRange(1, 1, 1, petHeaders.length)\n      .setBackground('#0f766e')\n      .setFontColor('#ffffff')\n      .setFontWeight('bold');\n    petSheet.setFrozenRows(1);\n  }\n\n  let ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n  if (!ownerSheet) {\n    ownerSheet = ss.insertSheet(CONFIG.SHEET_OWNERS);\n    const ownerHeaders = [\n      '\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27 (Booking_ID)',\n      '\u0e27\u0e31\u0e19\u0e40\u0e27\u0e25\u0e32\u0e17\u0e35\u0e48\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 (Created_At)',\n      '\u0e1c\u0e39\u0e49\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 (Staff_Email)',\n      '\u0e0a\u0e37\u0e48\u0e2d-\u0e2a\u0e01\u0e38\u0e25 \u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c',\n      '\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c',\n      '\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c',\n      '\u0e40\u0e25\u0e02\u0e1a\u0e31\u0e15\u0e23\u0e1b\u0e23\u0e30\u0e0a\u0e32\u0e0a\u0e19',\n      '\u0e08\u0e33\u0e19\u0e27\u0e19\u0e2a\u0e31\u0e15\u0e27\u0e4c (\u0e15\u0e31\u0e27)',\n      '\u0e2a\u0e23\u0e38\u0e1b\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e2a\u0e31\u0e15\u0e27\u0e4c',\n      '\u0e27\u0e31\u0e19\u0e19\u0e31\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e25\u0e31\u0e01',\n      '\u0e40\u0e14\u0e37\u0e2d\u0e19\u0e17\u0e35\u0e48\u0e19\u0e31\u0e14\u0e2b\u0e21\u0e32\u0e22 (YYYY-MM)',\n      '\u0e23\u0e27\u0e21\u0e04\u0e48\u0e32\u0e1a\u0e23\u0e34\u0e01\u0e32\u0e23 (\u0e1a\u0e32\u0e17)',\n      '\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e04\u0e34\u0e27'\n    ];\n    ownerSheet.appendRow(ownerHeaders);\n    ownerSheet.getRange(1, 1, 1, ownerHeaders.length)\n      .setBackground('#1e293b')\n      .setFontColor('#ffffff')\n      .setFontWeight('bold');\n    ownerSheet.setFrozenRows(1);\n  }\n\n  cleanDemoAndRepairDatabase(petSheet, ownerSheet);\n}\n\n/**\n * \u0e25\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e15\u0e31\u0e27\u0e2d\u0e22\u0e48\u0e32\u0e07 4 \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e41\u0e23\u0e01 (\u0e16\u0e49\u0e32\u0e40\u0e04\u0e22\u0e16\u0e39\u0e01\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e44\u0e27\u0e49) \u0e41\u0e25\u0e30\u0e08\u0e31\u0e14\u0e25\u0e33\u0e14\u0e31\u0e1a\u0e23\u0e2b\u0e31\u0e2a HN48 \u0e02\u0e2d\u0e07\u0e40\u0e04\u0e2a\u0e08\u0e23\u0e34\u0e07\u0e17\u0e35\u0e48\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\u0e43\u0e2b\u0e49\u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01 001 \u0e40\u0e2a\u0e21\u0e2d\n */\nfunction cleanDemoAndRepairDatabase(petSheet, ownerSheet) {\n  if (petSheet && petSheet.getLastRow() > 1) {\n    const petData = petSheet.getDataRange().getValues();\n    for (let i = petData.length - 1; i >= 1; i--) {\n      const oName = String(petData[i][4] || '').trim();\n      if (DEMO_OWNER_NAMES.indexOf(oName) !== -1) {\n        petSheet.deleteRow(i + 1);\n      }\n    }\n  }\n\n  if (ownerSheet && ownerSheet.getLastRow() > 1) {\n    const ownerData = ownerSheet.getDataRange().getValues();\n    for (let j = ownerData.length - 1; j >= 1; j--) {\n      const oName = String(ownerData[j][3] || '').trim();\n      if (DEMO_OWNER_NAMES.indexOf(oName) !== -1) {\n        ownerSheet.deleteRow(j + 1);\n      }\n    }\n  }\n\n  // \u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e41\u0e25\u0e30\u0e40\u0e23\u0e35\u0e22\u0e07\u0e25\u0e33\u0e14\u0e31\u0e1a\u0e23\u0e2b\u0e31\u0e2a HN48 \u0e02\u0e2d\u0e07\u0e40\u0e04\u0e2a\u0e17\u0e35\u0e48 \"\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\" \u0e43\u0e2b\u0e49\u0e40\u0e23\u0e34\u0e48\u0e21\u0e19\u0e31\u0e1a\u0e08\u0e32\u0e01 001 \u0e15\u0e32\u0e21\u0e25\u0e33\u0e14\u0e31\u0e1a\u0e08\u0e23\u0e34\u0e07\n  if (ownerSheet && ownerSheet.getLastRow() > 1 && petSheet && petSheet.getLastRow() > 1) {\n    const ownerData = ownerSheet.getDataRange().getValues();\n    const petData = petSheet.getDataRange().getValues();\n    let seqCounter = 1;\n\n    for (let j = 1; j < ownerData.length; j++) {\n      const oldId = String(ownerData[j][0] || '').trim();\n      const status = String(ownerData[j][12] || '').trim();\n\n      if (status === '\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19') {\n        let apptDate = '';\n        for (let i = 1; i < petData.length; i++) {\n          if (String(petData[i][0] || '').trim() === oldId) {\n            apptDate = formatDateOnly(petData[i][17]);\n            break;\n          }\n        }\n        if (!apptDate) {\n          apptDate = formatDateOnly(ownerData[j][9]);\n        }\n        let yy = '26', mm = '10', dd = '20';\n        if (apptDate && /^\\d{4}-\\d{2}-\\d{2}$/.test(apptDate)) {\n          yy = apptDate.substring(2, 4);\n          mm = apptDate.substring(5, 7);\n          dd = apptDate.substring(8, 10);\n        }\n        const expectedHnId = 'HN48' + yy + mm + dd + ('000' + seqCounter).slice(-3);\n        seqCounter++;\n\n        if (oldId !== expectedHnId) {\n          ownerSheet.getRange(j + 1, 1).setValue(expectedHnId);\n          let pIdx = 1;\n          for (let i = 1; i < petData.length; i++) {\n            if (String(petData[i][0] || '').trim() === oldId) {\n              petData[i][0] = expectedHnId;\n              petSheet.getRange(i + 1, 1).setValue(expectedHnId);\n              petSheet.getRange(i + 1, 2).setValue(expectedHnId + '-P' + pIdx++);\n            }\n          }\n        }\n      } else {\n        if (/^HN48/.test(oldId)) {\n          const waitId = 'WAIT-R' + j;\n          ownerSheet.getRange(j + 1, 1).setValue(waitId);\n          let pIdx = 1;\n          for (let i = 1; i < petData.length; i++) {\n            if (String(petData[i][0] || '').trim() === oldId) {\n              petData[i][0] = waitId;\n              petSheet.getRange(i + 1, 1).setValue(waitId);\n              petSheet.getRange(i + 1, 2).setValue(waitId + '-P' + pIdx++);\n            }\n          }\n        }\n      }\n    }\n  }\n}\n\n/**\n * \u0e14\u0e36\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e41\u0e2a\u0e14\u0e07\u0e1c\u0e25\u0e15\u0e2d\u0e19\u0e40\u0e23\u0e34\u0e48\u0e21\u0e15\u0e49\u0e19\u0e41\u0e25\u0e30\u0e1a\u0e19 Dashboard\n */\nfunction getInitialData() {\n  initDatabase();\n  const ss = getTargetSpreadsheet();\n  const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n  let userEmail = '\u0e1a\u0e38\u0e04\u0e25\u0e32\u0e01\u0e23\u0e43\u0e19\u0e2d\u0e07\u0e04\u0e4c\u0e01\u0e23';\n  try {\n    userEmail = Session.getActiveUser().getEmail() || '\u0e1a\u0e38\u0e04\u0e25\u0e32\u0e01\u0e23\u0e43\u0e19\u0e2d\u0e07\u0e04\u0e4c\u0e01\u0e23';\n  } catch (e) {}\n\n  let webAppUrl = '';\n  try {\n    webAppUrl = ScriptApp.getService().getUrl() || '';\n  } catch (e) {}\n\n  const values = petSheet.getDataRange().getValues();\n  const bookingsMap = {};\n  const bookingsList = [];\n\n  for (let i = 1; i < values.length; i++) {\n    const row = values[i];\n    const bookingId = String(row[0] || '').trim();\n    if (!bookingId) continue;\n\n    if (!bookingsMap[bookingId]) {\n      const bookingObj = {\n        bookingId: bookingId,\n        createdAt: formatCellDate(row[2]),\n        staffEmail: String(row[3] || ''),\n        ownerName: String(row[4] || ''),\n        ownerAddress: String(row[5] || ''),\n        phone: String(row[6] || '').replace(/^'/, ''),\n        nationalId: String(row[7] || '').replace(/^'/, ''),\n        status: String(row[22] || '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23').trim(),\n        pets: []\n      };\n      bookingsMap[bookingId] = bookingObj;\n      bookingsList.push(bookingObj);\n    }\n\n    const apptDate = formatDateOnly(row[17]);\n    const apptTime = formatTimeOnly(row[18]);\n    const apptMonth = String(row[19] || (apptDate ? apptDate.substring(0, 7) : '')).replace(/^'/, '').trim();\n    const rowStatus = String(row[22] || '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23').trim();\n\n    bookingsMap[bookingId].pets.push({\n      petId: String(row[1] || ''),\n      petName: String(row[8] || ''),\n      ownershipType: String(row[9] || '\u0e21\u0e35\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07'),\n      species: String(row[10] || '\u0e2a\u0e38\u0e19\u0e31\u0e02'),\n      gender: String(row[11] || '\u0e1c\u0e39\u0e49'),\n      ageYears: Number(row[12] || 0),\n      ageMonths: Number(row[13] || 0),\n      ageText: String(row[14] || ''),\n      breed: String(row[15] || '\u0e1c\u0e2a\u0e21'),\n      markings: String(row[16] || '-'),\n      appointmentDate: apptDate,\n      appointmentTime: apptTime,\n      appointmentMonth: apptMonth,\n      priceType: String(row[20] || '\u0e1f\u0e23\u0e35'),\n      priceAmount: Number(row[21] || 0),\n      petStatus: rowStatus\n    });\n  }\n\n  return {\n    userEmail: userEmail,\n    spreadsheetUrl: ss.getUrl(),\n    webAppUrl: webAppUrl,\n    bookings: bookingsList.reverse()\n  };\n}\n\n/**\n * \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e17\u0e33\u0e2b\u0e21\u0e31\u0e19\u0e43\u0e2b\u0e21\u0e48 (\u0e2d\u0e34\u0e07\u0e40\u0e27\u0e25\u0e32 Asia/Bangkok GMT+7)\n */\nfunction saveBookingRecord(payload) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n\n  try {\n    initDatabase();\n    const ss = getTargetSpreadsheet();\n    const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n    const ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n\n    const now = new Date();\n    const tz = CONFIG.TIMEZONE;\n    const createdAtStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm');\n    let userEmail = 'staff@dld.go.th';\n    try {\n      userEmail = Session.getActiveUser().getEmail() || 'staff@dld.go.th';\n    } catch (e) {}\n\n    const ownerName = String(payload.ownerName || '').trim();\n    const ownerAddress = String(payload.ownerAddress || '').trim();\n    const phone = String(payload.phone || '').trim();\n    const nationalId = String(payload.nationalId || '').trim();\n    const pets = Array.isArray(payload.pets) ? payload.pets : [];\n\n    if (!ownerName || !ownerAddress || !phone || pets.length === 0) {\n      throw new Error('\u0e01\u0e23\u0e38\u0e13\u0e32\u0e01\u0e23\u0e2d\u0e01\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e02\u0e2d\u0e07\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e41\u0e25\u0e30\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e19\u0e49\u0e2d\u0e22 1 \u0e15\u0e31\u0e27\u0e43\u0e2b\u0e49\u0e04\u0e23\u0e1a\u0e16\u0e49\u0e27\u0e19');\n    }\n\n    const bookingId = 'WAIT-' + Utilities.formatDate(now, tz, 'yyMMddHHmmss');\n\n    let totalCost = 0;\n    const petSummaryParts = [];\n    let primaryDate = '';\n    let primaryMonth = '';\n\n    pets.forEach(function(pet, idx) {\n      const petId = bookingId + '-P' + (idx + 1);\n      const years = Number(pet.ageYears || 0);\n      const months = Number(pet.ageMonths || 0);\n      const ageText = years + ' \u0e1b\u0e35 ' + months + ' \u0e40\u0e14\u0e37\u0e2d\u0e19';\n      const apptDate = formatDateOnly(pet.appointmentDate) || Utilities.formatDate(now, tz, 'yyyy-MM-dd');\n      const apptTime = formatTimeOnly(pet.appointmentTime) || Utilities.formatDate(now, tz, 'HH:mm');\n      const apptMonth = apptDate ? apptDate.substring(0, 7) : Utilities.formatDate(now, tz, 'yyyy-MM');\n      const priceType = String(pet.priceType || '\u0e1f\u0e23\u0e35');\n      const priceAmount = priceType === '\u0e1f\u0e23\u0e35' ? 0 : Number(pet.priceAmount || 0);\n\n      if (!primaryDate) {\n        primaryDate = apptDate + ' ' + apptTime;\n        primaryMonth = apptMonth;\n      }\n\n      totalCost += priceAmount;\n      petSummaryParts.push(pet.petName + ' (' + pet.species + '-' + pet.gender + ')');\n\n      petSheet.appendRow([\n        bookingId,\n        petId,\n        \"'\" + createdAtStr,\n        userEmail,\n        ownerName,\n        ownerAddress,\n        \"'\" + phone,\n        nationalId && nationalId !== '-' ? \"'\" + nationalId : '-',\n        String(pet.petName || '').trim(),\n        String(pet.ownershipType || '\u0e21\u0e35\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07'),\n        String(pet.species || '\u0e2a\u0e38\u0e19\u0e31\u0e02'),\n        String(pet.gender || '\u0e1c\u0e39\u0e49'),\n        years,\n        months,\n        ageText,\n        String(pet.breed || '\u0e1c\u0e2a\u0e21').trim(),\n        String(pet.markings || '-').trim(),\n        \"'\" + apptDate,\n        \"'\" + apptTime,\n        \"'\" + apptMonth,\n        priceType,\n        priceAmount,\n        '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23'\n      ]);\n    });\n\n    ownerSheet.appendRow([\n      bookingId,\n      \"'\" + createdAtStr,\n      userEmail,\n      ownerName,\n      ownerAddress,\n      \"'\" + phone,\n      nationalId && nationalId !== '-' ? \"'\" + nationalId : '-',\n      pets.length,\n      petSummaryParts.join(', '),\n      \"'\" + primaryDate,\n      \"'\" + primaryMonth,\n      totalCost,\n      '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23'\n    ]);\n\n    return {\n      success: true,\n      bookingId: bookingId,\n      data: getInitialData()\n    };\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * \u0e41\u0e01\u0e49\u0e44\u0e02\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e40\u0e14\u0e34\u0e21\n */\nfunction updateBookingRecord(payload) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n\n  try {\n    initDatabase();\n    const ss = getTargetSpreadsheet();\n    const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n    const ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n    const tz = CONFIG.TIMEZONE;\n    const now = new Date();\n    const updatedAtStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm');\n    let userEmail = 'staff@dld.go.th';\n    try {\n      userEmail = Session.getActiveUser().getEmail() || 'staff@dld.go.th';\n    } catch (e) {}\n\n    const bookingId = String(payload.bookingId || '').trim();\n    if (!bookingId) throw new Error('\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e41\u0e01\u0e49\u0e44\u0e02');\n\n    const ownerName = String(payload.ownerName || '').trim();\n    const ownerAddress = String(payload.ownerAddress || '').trim();\n    const phone = String(payload.phone || '').trim();\n    const nationalId = String(payload.nationalId || '').trim();\n    const status = String(payload.status || '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23').trim();\n    const pets = Array.isArray(payload.pets) ? payload.pets : [];\n\n    const petData = petSheet.getDataRange().getValues();\n    for (let i = petData.length - 1; i >= 1; i--) {\n      if (String(petData[i][0]).trim() === bookingId) {\n        petSheet.deleteRow(i + 1);\n      }\n    }\n\n    const ownerData = ownerSheet.getDataRange().getValues();\n    for (let j = ownerData.length - 1; j >= 1; j--) {\n      if (String(ownerData[j][0]).trim() === bookingId) {\n        ownerSheet.deleteRow(j + 1);\n      }\n    }\n\n    let totalCost = 0;\n    const petSummaryParts = [];\n    let primaryDate = '';\n    let primaryMonth = '';\n\n    pets.forEach(function(pet, idx) {\n      const petId = bookingId + '-P' + (idx + 1);\n      const years = Number(pet.ageYears || 0);\n      const months = Number(pet.ageMonths || 0);\n      const ageText = years + ' \u0e1b\u0e35 ' + months + ' \u0e40\u0e14\u0e37\u0e2d\u0e19';\n      const apptDate = formatDateOnly(pet.appointmentDate) || Utilities.formatDate(now, tz, 'yyyy-MM-dd');\n      const apptTime = formatTimeOnly(pet.appointmentTime) || Utilities.formatDate(now, tz, 'HH:mm');\n      const apptMonth = apptDate ? apptDate.substring(0, 7) : Utilities.formatDate(now, tz, 'yyyy-MM');\n      const priceType = String(pet.priceType || '\u0e1f\u0e23\u0e35');\n      const priceAmount = priceType === '\u0e1f\u0e23\u0e35' ? 0 : Number(pet.priceAmount || 0);\n\n      if (!primaryDate) {\n        primaryDate = apptDate + ' ' + apptTime;\n        primaryMonth = apptMonth;\n      }\n\n      totalCost += priceAmount;\n      petSummaryParts.push(pet.petName + ' (' + pet.species + '-' + pet.gender + ')');\n\n      petSheet.appendRow([\n        bookingId,\n        petId,\n        \"'\" + updatedAtStr,\n        userEmail,\n        ownerName,\n        ownerAddress,\n        \"'\" + phone,\n        nationalId && nationalId !== '-' ? \"'\" + nationalId : '-',\n        String(pet.petName || '').trim(),\n        String(pet.ownershipType || '\u0e21\u0e35\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07'),\n        String(pet.species || '\u0e2a\u0e38\u0e19\u0e31\u0e02'),\n        String(pet.gender || '\u0e1c\u0e39\u0e49'),\n        years,\n        months,\n        ageText,\n        String(pet.breed || '\u0e1c\u0e2a\u0e21').trim(),\n        String(pet.markings || '-').trim(),\n        \"'\" + apptDate,\n        \"'\" + apptTime,\n        \"'\" + apptMonth,\n        priceType,\n        priceAmount,\n        status\n      ]);\n    });\n\n    ownerSheet.appendRow([\n      bookingId,\n      \"'\" + updatedAtStr,\n      userEmail,\n      ownerName,\n      ownerAddress,\n      \"'\" + phone,\n      nationalId && nationalId !== '-' ? \"'\" + nationalId : '-',\n      pets.length,\n      petSummaryParts.join(', '),\n      \"'\" + primaryDate,\n      \"'\" + primaryMonth,\n      totalCost,\n      status\n    ]);\n\n    return {\n      success: true,\n      bookingId: bookingId,\n      data: getInitialData()\n    };\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * \u0e25\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e2d\u0e2d\u0e01\u0e08\u0e32\u0e01\u0e10\u0e32\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25 Google Sheets (\u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e25\u0e1a\u0e17\u0e38\u0e01\u0e2a\u0e16\u0e32\u0e19\u0e30 \u0e23\u0e27\u0e21\u0e16\u0e36\u0e07 \"\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01\u0e04\u0e34\u0e27\")\n */\nfunction deleteBookingRecord(bookingId, ownerName, phone) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n\n  try {\n    const ss = getTargetSpreadsheet();\n    const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n    const ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n    const targetId = String(bookingId || '').trim();\n    const targetOwner = String(ownerName || '').trim();\n    const targetPhone = String(phone || '').replace(/^'/, '').trim();\n\n    let deletedPetRows = 0;\n    if (petSheet && petSheet.getLastRow() > 1) {\n      const petData = petSheet.getDataRange().getValues();\n      for (let i = petData.length - 1; i >= 1; i--) {\n        const rowId = String(petData[i][0] || '').trim();\n        const rowOwner = String(petData[i][4] || '').trim();\n        const rowPhone = String(petData[i][6] || '').replace(/^'/, '').trim();\n        if ((targetId && rowId === targetId) || (targetOwner && rowOwner === targetOwner && (!targetPhone || rowPhone === targetPhone))) {\n          petSheet.deleteRow(i + 1);\n          deletedPetRows++;\n        }\n      }\n    }\n\n    if (ownerSheet && ownerSheet.getLastRow() > 1) {\n      const ownerData = ownerSheet.getDataRange().getValues();\n      for (let j = ownerData.length - 1; j >= 1; j--) {\n        const rowId = String(ownerData[j][0] || '').trim();\n        const rowOwner = String(ownerData[j][3] || '').trim();\n        const rowPhone = String(ownerData[j][5] || '').replace(/^'/, '').trim();\n        if ((targetId && rowId === targetId) || (targetOwner && rowOwner === targetOwner && (!targetPhone || rowPhone === targetPhone))) {\n          ownerSheet.deleteRow(j + 1);\n        }\n      }\n    }\n\n    return {\n      success: true,\n      deletedCount: deletedPetRows,\n      data: getInitialData()\n    };\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * \u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e04\u0e34\u0e27\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e17\u0e33\u0e2b\u0e21\u0e31\u0e19 (\u0e23\u0e31\u0e19\u0e23\u0e2b\u0e31\u0e2a HN48YYMMDDXXX \u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01 001 \u0e40\u0e09\u0e1e\u0e32\u0e30\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19 \"\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\")\n */\nfunction updateBookingStatus(bookingId, newStatus) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n  try {\n    const ss = getTargetSpreadsheet();\n    const tz = CONFIG.TIMEZONE;\n    const now = new Date();\n    const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n    const ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n\n    let assignedHnId = String(bookingId || '').trim();\n    let appointmentDateForHn = '';\n\n    if (petSheet && petSheet.getLastRow() > 1) {\n      const petData = petSheet.getDataRange().getValues();\n      for (let i = 1; i < petData.length; i++) {\n        if (String(petData[i][0] || '').trim() === assignedHnId && !appointmentDateForHn) {\n          appointmentDateForHn = formatDateOnly(petData[i][17]);\n        }\n      }\n    }\n\n    if (newStatus === '\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19' && !/^HN48\\d{9}$/.test(assignedHnId)) {\n      assignedHnId = generateHN48QueueId(appointmentDateForHn, ownerSheet);\n    } else if (newStatus !== '\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19' && /^HN48/.test(assignedHnId)) {\n      assignedHnId = 'WAIT-' + Utilities.formatDate(now, tz, 'yyMMddHHmmss');\n    }\n\n    if (petSheet && petSheet.getLastRow() > 1) {\n      const petData = petSheet.getDataRange().getValues();\n      let petIdx = 1;\n      for (let i = 1; i < petData.length; i++) {\n        if (String(petData[i][0] || '').trim() === String(bookingId || '').trim()) {\n          if (assignedHnId !== String(bookingId || '').trim()) {\n            petSheet.getRange(i + 1, 1).setValue(assignedHnId);\n            petSheet.getRange(i + 1, 2).setValue(assignedHnId + '-P' + petIdx++);\n          }\n          petSheet.getRange(i + 1, 23).setValue(newStatus);\n        }\n      }\n    }\n\n    if (ownerSheet && ownerSheet.getLastRow() > 1) {\n      const ownerData = ownerSheet.getDataRange().getValues();\n      for (let j = 1; j < ownerData.length; j++) {\n        if (String(ownerData[j][0] || '').trim() === String(bookingId || '').trim()) {\n          if (assignedHnId !== String(bookingId || '').trim()) {\n            ownerSheet.getRange(j + 1, 1).setValue(assignedHnId);\n          }\n          ownerSheet.getRange(j + 1, 13).setValue(newStatus);\n        }\n      }\n    }\n\n    return {\n      success: true,\n      assignedBookingId: assignedHnId,\n      data: getInitialData()\n    };\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction formatCellDate(val) {\n  if (!val) return '';\n  if (Object.prototype.toString.call(val) === '[object Date]') {\n    return Utilities.formatDate(val, CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm');\n  }\n  return String(val).replace(/^'/, '').trim();\n}\n\nfunction formatDateOnly(val) {\n  if (!val) return '';\n  if (Object.prototype.toString.call(val) === '[object Date]') {\n    return Utilities.formatDate(val, CONFIG.TIMEZONE, 'yyyy-MM-dd');\n  }\n  const clean = String(val).replace(/^'/, '').trim();\n  const m = clean.match(/(\\d{4}-\\d{2}-\\d{2})/);\n  if (m) return m[1];\n  return clean.substring(0, 10);\n}\n\n/**\n * \u0e41\u0e1b\u0e25\u0e07\u0e04\u0e48\u0e32\u0e40\u0e27\u0e25\u0e32\u0e08\u0e32\u0e01 Google Sheets (\u0e1b\u0e49\u0e2d\u0e07\u0e01\u0e31\u0e19\u0e1b\u0e31\u0e0d\u0e2b\u0e32\u0e41\u0e2a\u0e14\u0e07 Sat Dec 30 1899 10:00:00 GMT+0642)\n */\nfunction formatTimeOnly(val) {\n  if (val === null || val === undefined || val === '') return '';\n  const str = String(val).replace(/^'/, '').trim();\n  const mSimple = str.match(/^(\\d{1,2}):(\\d{2})$/);\n  if (mSimple) {\n    return ('0' + mSimple[1]).slice(-2) + ':' + mSimple[2];\n  }\n  const mTimeInStr = str.match(/(\\d{1,2}):(\\d{2}):\\d{2}/);\n  if (mTimeInStr) {\n    return ('0' + mTimeInStr[1]).slice(-2) + ':' + mTimeInStr[2];\n  }\n  if (Object.prototype.toString.call(val) === '[object Date]') {\n    const hh = ('0' + val.getHours()).slice(-2);\n    const mm = ('0' + val.getMinutes()).slice(-2);\n    return hh + ':' + mm;\n  }\n  return str;\n}\n";
+      document.getElementById('manifestTextarea').value = "{\n  \"timeZone\": \"Asia/Bangkok\",\n  \"dependencies\": {},\n  \"webapp\": {\n    \"executeAs\": \"USER_DEPLOYING\",\n    \"access\": \"ANYONE_ANONYMOUS\"\n  },\n  \"exceptionLogging\": \"STACKDRIVER\",\n  \"runtimeVersion\": \"V8\"\n}\n";
+      if (!isGasEnvironment() && window.location.hostname.indexOf('github.io') === -1) {
+        const helperEl = document.getElementById('canvasCopyHelper');
+        if (helperEl) helperEl.classList.remove('hidden');
+      }
+      petDraftCards = [createBlankPetDraft(null)];
+      renderPetCards();
+      loadInitialBookings();
+    };
+  </script>
+</body>
+</html>
