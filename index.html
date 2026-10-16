@@ -463,6 +463,177 @@
         </div>
       </div>
 
+      <!-- ==================== MONTHLY COMPARISON DASHBOARD SECTION ==================== -->
+      <div class="bg-white rounded-2xl border-2 border-teal-600/25 shadow-sm overflow-hidden">
+        <!-- Section Header & Controls -->
+        <div class="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-white px-5 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-teal-400/20 border border-teal-300/30 text-teal-200 flex items-center justify-center shrink-0 mt-0.5 font-bold text-sm">
+              📊
+            </div>
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="font-bold text-base sm:text-lg text-white">
+                  Dashboard เปรียบเทียบข้อมูลสถิติรายเดือน (ครบทุกมิติ)
+                </h3>
+                <span id="monthlyCountBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-teal-400 text-slate-950">
+                  0 เดือน
+                </span>
+              </div>
+              <p class="text-xs text-teal-100/85 mt-0.5">
+                เปรียบเทียบข้อมูลผ่าตัดเสร็จสิ้นรายเดือน: ผู้รับบริการ • ชนิดและเพศสัตว์ • มีเจ้าของ/จรจัด (แยกฟรี/มีค่าใช้จ่าย) • รายได้ค่าบริการรวม
+              </p>
+            </div>
+          </div>
+
+          <!-- Month A vs Month B Quick Comparator & Year Filter -->
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <div class="flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-xl px-2.5 py-1.5">
+              <span class="text-teal-200 font-semibold">ปี:</span>
+              <select id="compareYearSelect" onchange="renderMonthlyComparison()"
+                class="bg-slate-900 text-white font-bold rounded-lg px-2 py-1 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <option value="ALL">ทุกปี</option>
+              </select>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-1.5 bg-white/10 border border-white/15 rounded-xl px-2.5 py-1.5">
+              <span class="text-amber-300 font-bold">เทียบเดือน:</span>
+              <select id="compareMonthA" onchange="renderMonthlyComparison(true)"
+                aria-label="เลือกเดือนตั้งต้นสำหรับเปรียบเทียบ"
+                class="bg-slate-900 text-white font-semibold rounded-lg px-2 py-1 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-400">
+              </select>
+              <span class="text-teal-200 font-bold">กับ</span>
+              <select id="compareMonthB" onchange="renderMonthlyComparison(true)"
+                aria-label="เลือกเดือนเปรียบเทียบ"
+                class="bg-slate-900 text-white font-semibold rounded-lg px-2 py-1 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-400">
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-5 space-y-6">
+          <!-- Month A vs Month B Direct Comparison Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+              <div class="text-xs font-bold text-slate-500 flex items-center justify-between">
+                <span>เปรียบเทียบผู้รับบริการ</span>
+                <span id="momOwnersDiffBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">-</span>
+              </div>
+              <div id="momOwnersMain" class="text-lg font-bold text-slate-900 mt-1.5">0 vs 0 ราย</div>
+              <div id="momOwnersSub" class="text-[11px] text-slate-500 mt-1">เลือกเดือนเพื่อเปรียบเทียบ</div>
+            </div>
+
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+              <div class="text-xs font-bold text-slate-500 flex items-center justify-between">
+                <span>เปรียบเทียบสัตว์ทำหมันรวม</span>
+                <span id="momPetsDiffBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">-</span>
+              </div>
+              <div id="momPetsMain" class="text-lg font-bold text-slate-900 mt-1.5">0 vs 0 ตัว</div>
+              <div id="momPetsSub" class="text-[11px] text-slate-600 mt-1">สุนัข 0 vs 0 • แมว 0 vs 0</div>
+            </div>
+
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+              <div class="text-xs font-bold text-slate-500 flex items-center justify-between">
+                <span>เปรียบเทียบมีเจ้าของ / จรจัด</span>
+                <span id="momOwnershipDiffBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">Subset</span>
+              </div>
+              <div id="momOwnershipMain" class="text-sm font-bold text-slate-900 mt-1.5">มีเจ้าของ 0 vs 0 • จรจัด 0 vs 0</div>
+              <div id="momOwnershipSub" class="text-[11px] text-slate-600 mt-1">ฟรี 0 vs 0 • จ่ายเงิน 0 vs 0</div>
+            </div>
+
+            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
+              <div class="text-xs font-bold text-slate-500 flex items-center justify-between">
+                <span>เปรียบเทียบค่าบริการรวม</span>
+                <span id="momRevenueDiffBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">-</span>
+              </div>
+              <div id="momRevenueMain" class="text-lg font-bold text-emerald-700 mt-1.5">0 vs 0 บาท</div>
+              <div id="momRevenueSub" class="text-[11px] text-slate-600 mt-1">ส่วนต่างค่าบริการรายเดือน</div>
+            </div>
+          </div>
+
+          <!-- Monthly Comparison Charts (2 Side-by-Side Charts) -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="rounded-2xl border border-slate-200 p-4 bg-white">
+              <div class="mb-3">
+                <h4 class="font-bold text-sm sm:text-base text-slate-900">
+                  กราฟเปรียบเทียบรายเดือน: ชนิดและเพศสัตว์ & จำนวนผู้รับบริการ
+                </h4>
+                <p class="text-xs text-slate-500">
+                  เปรียบเทียบจำนวนสุนัข (ผู้/เมีย), แมว (ผู้/เมีย) และจำนวนผู้รับบริการ (ราย) ในแต่ละเดือน
+                </p>
+              </div>
+              <div class="relative h-64">
+                <canvas id="monthlySpeciesTrendChart"></canvas>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200 p-4 bg-white">
+              <div class="mb-3">
+                <h4 class="font-bold text-sm sm:text-base text-slate-900">
+                  กราฟเปรียบเทียบรายเดือน: ประเภทสัตว์ (Subset ฟรี/จ่ายเงิน) & รายได้รวม
+                </h4>
+                <p class="text-xs text-slate-500">
+                  เปรียบเทียบสัตว์มีเจ้าของ (ฟรี/จ่ายเงิน), สัตว์จรจัด (ฟรี/จ่ายเงิน) และยอดรวมค่าบริการ (บาท) รายเดือน
+                </p>
+              </div>
+              <div class="relative h-64">
+                <canvas id="monthlyOwnershipRevenueChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comprehensive Monthly Comparison Table -->
+          <div class="rounded-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-slate-100 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h4 class="font-bold text-sm text-slate-900">
+                  ตารางเปรียบเทียบข้อมูลสถิติรายเดือน (สรุปครบทุกหมวดหมู่ใน Dashboard)
+                </h4>
+                <p class="text-xs text-slate-500">
+                  คลิกที่ชื่อเดือนในตารางเพื่อกรองดูเฉพาะเดือนนั้นใน Dashboard ด้านบนได้ทันที
+                </p>
+              </div>
+              <span class="text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
+                นับเฉพาะเคสยืนยันผ่าตัดเสร็จสิ้น
+              </span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                <thead>
+                  <tr class="bg-slate-800 text-white text-xs font-bold">
+                    <th class="py-3 px-3 whitespace-nowrap border-r border-slate-700" rowspan="2">เดือนที่ให้บริการ</th>
+                    <th class="py-3 px-3 text-center whitespace-nowrap border-r border-slate-700" rowspan="2">ผู้รับบริการ<br>(ราย)</th>
+                    <th class="py-3 px-3 text-center whitespace-nowrap border-r border-slate-700" rowspan="2">สัตว์รวม<br>(ตัว)</th>
+                    <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-teal-900/60" colspan="3">🐕 สุนัข (ตัว)</th>
+                    <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-amber-900/60" colspan="3">🐈 แมว (ตัว)</th>
+                    <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-teal-950/80" colspan="3">🏠 สัตว์มีเจ้าของ (Subset)</th>
+                    <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-amber-950/80" colspan="3">🐾 สัตว์จรจัด (Subset)</th>
+                    <th class="py-3 px-3 text-right whitespace-nowrap" rowspan="2">รวมค่าบริการ<br>(บาท)</th>
+                  </tr>
+                  <tr class="bg-slate-700 text-slate-100 text-[11px] font-bold">
+                    <th class="py-1.5 px-2 text-center">ผู้</th>
+                    <th class="py-1.5 px-2 text-center">เมีย</th>
+                    <th class="py-1.5 px-2 text-center border-r border-slate-600 text-teal-300">รวม</th>
+                    <th class="py-1.5 px-2 text-center">ผู้</th>
+                    <th class="py-1.5 px-2 text-center">เมีย</th>
+                    <th class="py-1.5 px-2 text-center border-r border-slate-600 text-amber-300">รวม</th>
+                    <th class="py-1.5 px-2 text-center text-emerald-300">ฟรี</th>
+                    <th class="py-1.5 px-2 text-center text-sky-300">จ่ายเงิน</th>
+                    <th class="py-1.5 px-2 text-center border-r border-slate-600 text-white">รวม</th>
+                    <th class="py-1.5 px-2 text-center text-emerald-300">ฟรี</th>
+                    <th class="py-1.5 px-2 text-center text-sky-300">จ่ายเงิน</th>
+                    <th class="py-1.5 px-2 text-center border-r border-slate-600 text-white">รวม</th>
+                  </tr>
+                </thead>
+                <tbody id="monthlyComparisonTableBody" class="divide-y divide-slate-200"></tbody>
+                <tfoot id="monthlyComparisonTableFoot" class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300"></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Master List Table of Individual Bookings -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="px-5 py-4 bg-slate-800 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
@@ -899,6 +1070,8 @@
     let pendingDeleteBookingId = null;
     let speciesGenderChartInstance = null;
     let ownershipPriceChartInstance = null;
+    let monthlySpeciesTrendChartInstance = null;
+    let monthlyOwnershipRevenueChartInstance = null;
 
     const THAI_MONTH_NAMES = {
       '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
@@ -2036,6 +2209,7 @@
       document.getElementById('tableResultCount').textContent = 'แสดงในตาราง ' + tableFiltered.length + ' ราย (' + tablePetsCount + ' ตัว)';
 
       renderCharts(dogMale, dogFemale, catMale, catFemale, ownedFree, ownedPaid, strayFree, strayPaid);
+      renderMonthlyComparison();
       renderDashboardTable(tableFiltered);
     }
 
@@ -2098,6 +2272,409 @@
           }
         }
       });
+    }
+
+    function formatShortMonthThai(yyyyMm) {
+      if (!yyyyMm) return '-';
+      const parts = String(yyyyMm).split('-');
+      if (parts.length !== 2) return yyyyMm;
+      const shortMonths = {
+        '01': 'ม.ค.', '02': 'ก.พ.', '03': 'มี.ค.', '04': 'เม.ย.',
+        '05': 'พ.ค.', '06': 'มิ.ย.', '07': 'ก.ค.', '08': 'ส.ค.',
+        '09': 'ก.ย.', '10': 'ต.ค.', '11': 'พ.ย.', '12': 'ธ.ค.'
+      };
+      const by = (Number(parts[0]) + 543) % 100;
+      return (shortMonths[parts[1]] || parts[1]) + ' ' + by;
+    }
+
+    function selectMonthFromComparison(yyyyMm) {
+      const sel = document.getElementById('filterMonth');
+      if (!sel) return;
+      sel.value = yyyyMm;
+      renderDashboard();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('กรองข้อมูล Dashboard เฉพาะเดือน ' + formatMonthThai(yyyyMm) + ' แล้ว');
+    }
+
+    function renderDiffBadge(elId, valA, valB, unit) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      const diff = valA - valB;
+      if (diff > 0) {
+        el.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
+        el.textContent = '▲ +' + diff.toLocaleString('th-TH') + ' ' + unit;
+      } else if (diff < 0) {
+        el.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-300';
+        el.textContent = '▼ ' + diff.toLocaleString('th-TH') + ' ' + unit;
+      } else {
+        el.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700';
+        el.textContent = '= เท่ากัน';
+      }
+    }
+
+    function renderMonthlyComparison(keepMonthSelectors) {
+      const speciesFilter = document.getElementById('filterSpecies') ? document.getElementById('filterSpecies').value : 'ALL';
+      const ownershipFilter = document.getElementById('filterOwnership') ? document.getElementById('filterOwnership').value : 'ALL';
+      const searchStr = document.getElementById('filterSearch') ? document.getElementById('filterSearch').value.trim().toLowerCase() : '';
+      const yearSelect = document.getElementById('compareYearSelect');
+      const selectedYear = yearSelect ? yearSelect.value : 'ALL';
+
+      const bkk = getBangkokNowParts();
+      const currentYm = bkk.date.substring(0, 7);
+      const allYearsSet = new Set([bkk.date.substring(0, 4)]);
+      const monthStatsMap = {};
+
+      function ensureMonthBucket(ym) {
+        if (!monthStatsMap[ym]) {
+          monthStatsMap[ym] = {
+            ym: ym,
+            ownerIds: new Set(),
+            ownersCount: 0,
+            totalPets: 0,
+            dogMale: 0,
+            dogFemale: 0,
+            dogTotal: 0,
+            catMale: 0,
+            catFemale: 0,
+            catTotal: 0,
+            maleTotal: 0,
+            femaleTotal: 0,
+            ownedFree: 0,
+            ownedPaid: 0,
+            ownedTotal: 0,
+            strayFree: 0,
+            strayPaid: 0,
+            strayTotal: 0,
+            freeTotal: 0,
+            paidTotal: 0,
+            revenue: 0
+          };
+        }
+        return monthStatsMap[ym];
+      }
+
+      bookingsState.forEach(function(b) {
+        if (b.status !== 'ผ่าตัดเสร็จสิ้น') return;
+
+        const matchingPets = (b.pets || []).filter(function(p) {
+          if (speciesFilter !== 'ALL' && p.species !== speciesFilter) return false;
+          if (ownershipFilter !== 'ALL' && p.ownershipType !== ownershipFilter) return false;
+          return true;
+        });
+        if (matchingPets.length === 0) return;
+
+        if (searchStr) {
+          const ownerMatch =
+            b.ownerName.toLowerCase().indexOf(searchStr) !== -1 ||
+            b.phone.toLowerCase().indexOf(searchStr) !== -1 ||
+            b.bookingId.toLowerCase().indexOf(searchStr) !== -1 ||
+            b.ownerAddress.toLowerCase().indexOf(searchStr) !== -1 ||
+            String(b.nationalId || '').toLowerCase().indexOf(searchStr) !== -1;
+
+          const petMatch = matchingPets.some(function(p) {
+            return p.petName.toLowerCase().indexOf(searchStr) !== -1 ||
+                   p.breed.toLowerCase().indexOf(searchStr) !== -1 ||
+                   String(p.markings || '').toLowerCase().indexOf(searchStr) !== -1;
+          });
+          if (!ownerMatch && !petMatch) return;
+        }
+
+        matchingPets.forEach(function(p) {
+          const ym = p.appointmentMonth || (p.appointmentDate ? String(p.appointmentDate).substring(0, 7) : currentYm);
+          if (!ym || ym.length < 7) return;
+          const yr = ym.substring(0, 4);
+          allYearsSet.add(yr);
+          if (selectedYear !== 'ALL' && yr !== selectedYear) return;
+
+          const bucket = ensureMonthBucket(ym);
+          bucket.ownerIds.add(b.bookingId);
+          bucket.ownersCount = bucket.ownerIds.size;
+          bucket.totalPets++;
+
+          if (p.species === 'สุนัข') {
+            bucket.dogTotal++;
+            if (p.gender === 'ผู้') bucket.dogMale++; else bucket.dogFemale++;
+          } else {
+            bucket.catTotal++;
+            if (p.gender === 'ผู้') bucket.catMale++; else bucket.catFemale++;
+          }
+
+          if (p.gender === 'ผู้') bucket.maleTotal++; else bucket.femaleTotal++;
+
+          const isFree = (p.priceType === 'ฟรี' || Number(p.priceAmount) === 0);
+          const priceAmt = isFree ? 0 : Number(p.priceAmount || 0);
+
+          if (p.ownershipType === 'มีเจ้าของ') {
+            bucket.ownedTotal++;
+            if (isFree) bucket.ownedFree++; else bucket.ownedPaid++;
+          } else {
+            bucket.strayTotal++;
+            if (isFree) bucket.strayFree++; else bucket.strayPaid++;
+          }
+
+          if (isFree) {
+            bucket.freeTotal++;
+          } else {
+            bucket.paidTotal++;
+            bucket.revenue += priceAmt;
+          }
+        });
+      });
+
+      if (Object.keys(monthStatsMap).length === 0) {
+        ensureMonthBucket(currentYm);
+      }
+
+      // Populate Year Dropdown
+      if (yearSelect) {
+        const prevYear = yearSelect.value || 'ALL';
+        const sortedYears = Array.from(allYearsSet).sort().reverse();
+        yearSelect.innerHTML = '<option value="ALL">ทุกปี</option>';
+        sortedYears.forEach(function(yr) {
+          const opt = document.createElement('option');
+          opt.value = yr;
+          opt.textContent = 'พ.ศ. ' + (Number(yr) + 543) + ' (' + yr + ')';
+          yearSelect.appendChild(opt);
+        });
+        if (sortedYears.indexOf(prevYear) !== -1 || prevYear === 'ALL') {
+          yearSelect.value = prevYear;
+        }
+      }
+
+      const sortedMonthsAsc = Object.keys(monthStatsMap).sort();
+      const sortedMonthsDesc = sortedMonthsAsc.slice().reverse();
+
+      const badgeEl = document.getElementById('monthlyCountBadge');
+      if (badgeEl) {
+        badgeEl.textContent = sortedMonthsAsc.length + ' เดือนที่มีข้อมูล';
+      }
+
+      // Populate Month A vs Month B dropdowns
+      const selA = document.getElementById('compareMonthA');
+      const selB = document.getElementById('compareMonthB');
+      if (selA && selB && !keepMonthSelectors) {
+        const prevA = selA.value;
+        const prevB = selB.value;
+        selA.innerHTML = '';
+        selB.innerHTML = '';
+        sortedMonthsDesc.forEach(function(ym) {
+          const optA = document.createElement('option');
+          optA.value = ym;
+          optA.textContent = formatMonthThai(ym);
+          selA.appendChild(optA);
+
+          const optB = document.createElement('option');
+          optB.value = ym;
+          optB.textContent = formatMonthThai(ym);
+          selB.appendChild(optB);
+        });
+
+        if (sortedMonthsDesc.indexOf(prevA) !== -1) {
+          selA.value = prevA;
+        } else if (sortedMonthsDesc.length > 0) {
+          selA.value = sortedMonthsDesc[0];
+        }
+
+        if (sortedMonthsDesc.indexOf(prevB) !== -1) {
+          selB.value = prevB;
+        } else if (sortedMonthsDesc.length > 1) {
+          selB.value = sortedMonthsDesc[1];
+        } else if (sortedMonthsDesc.length > 0) {
+          selB.value = sortedMonthsDesc[0];
+        }
+      }
+
+      // Render Month A vs Month B comparison cards
+      const ymA = selA && selA.value ? selA.value : sortedMonthsDesc[0];
+      const ymB = selB && selB.value ? selB.value : (sortedMonthsDesc[1] || sortedMonthsDesc[0]);
+      const statA = monthStatsMap[ymA] || ensureMonthBucket(ymA);
+      const statB = monthStatsMap[ymB] || ensureMonthBucket(ymB);
+      const shortA = formatShortMonthThai(ymA);
+      const shortB = formatShortMonthThai(ymB);
+
+      renderDiffBadge('momOwnersDiffBadge', statA.ownersCount, statB.ownersCount, 'ราย');
+      document.getElementById('momOwnersMain').textContent =
+        shortA + ': ' + statA.ownersCount + ' ราย vs ' + shortB + ': ' + statB.ownersCount + ' ราย';
+      document.getElementById('momOwnersSub').textContent =
+        'เปรียบเทียบจำนวนผู้รับบริการที่ผ่าตัดเสร็จสิ้น';
+
+      renderDiffBadge('momPetsDiffBadge', statA.totalPets, statB.totalPets, 'ตัว');
+      document.getElementById('momPetsMain').textContent =
+        shortA + ': ' + statA.totalPets + ' ตัว vs ' + shortB + ': ' + statB.totalPets + ' ตัว';
+      document.getElementById('momPetsSub').textContent =
+        'สุนัข ' + statA.dogTotal + ' vs ' + statB.dogTotal + ' ตัว • แมว ' + statA.catTotal + ' vs ' + statB.catTotal + ' ตัว';
+
+      document.getElementById('momOwnershipMain').textContent =
+        'มีเจ้าของ ' + statA.ownedTotal + ' vs ' + statB.ownedTotal + ' • จรจัด ' + statA.strayTotal + ' vs ' + statB.strayTotal;
+      document.getElementById('momOwnershipSub').textContent =
+        'มีเจ้าของ(ฟรี ' + statA.ownedFree + '/' + statB.ownedFree + ' จ่าย ' + statA.ownedPaid + '/' + statB.ownedPaid + ') • จรจัด(ฟรี ' + statA.strayFree + '/' + statB.strayFree + ' จ่าย ' + statA.strayPaid + '/' + statB.strayPaid + ')';
+
+      renderDiffBadge('momRevenueDiffBadge', statA.revenue, statB.revenue, 'บาท');
+      document.getElementById('momRevenueMain').textContent =
+        statA.revenue.toLocaleString('th-TH') + ' vs ' + statB.revenue.toLocaleString('th-TH') + ' บาท';
+      document.getElementById('momRevenueSub').textContent =
+        shortA + ' เทียบกับ ' + shortB;
+
+      // Render Monthly Comparison Charts
+      if (typeof Chart !== 'undefined') {
+        const labels = sortedMonthsAsc.map(function(ym) { return formatShortMonthThai(ym); });
+        const dogMaleSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].dogMale; });
+        const dogFemaleSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].dogFemale; });
+        const catMaleSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].catMale; });
+        const catFemaleSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].catFemale; });
+        const ownersSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].ownersCount; });
+
+        const ctxM1 = document.getElementById('monthlySpeciesTrendChart').getContext('2d');
+        if (monthlySpeciesTrendChartInstance) monthlySpeciesTrendChartInstance.destroy();
+        monthlySpeciesTrendChartInstance = new Chart(ctxM1, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              { label: 'สุนัข (ผู้)', data: dogMaleSeries, backgroundColor: '#0d9488', borderRadius: 4 },
+              { label: 'สุนัข (เมีย)', data: dogFemaleSeries, backgroundColor: '#2dd4bf', borderRadius: 4 },
+              { label: 'แมว (ผู้)', data: catMaleSeries, backgroundColor: '#d97706', borderRadius: 4 },
+              { label: 'แมว (เมีย)', data: catFemaleSeries, backgroundColor: '#fbbf24', borderRadius: 4 },
+              {
+                label: 'ผู้รับบริการ (ราย)',
+                data: ownersSeries,
+                type: 'line',
+                borderColor: '#1e293b',
+                backgroundColor: '#1e293b',
+                borderWidth: 2,
+                tension: 0.25,
+                pointRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+              y: { beginAtZero: true, ticks: { stepSize: 1 } }
+            }
+          }
+        });
+
+        const ownedFreeSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].ownedFree; });
+        const ownedPaidSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].ownedPaid; });
+        const strayFreeSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].strayFree; });
+        const strayPaidSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].strayPaid; });
+        const revenueSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].revenue; });
+
+        const ctxM2 = document.getElementById('monthlyOwnershipRevenueChart').getContext('2d');
+        if (monthlyOwnershipRevenueChartInstance) monthlyOwnershipRevenueChartInstance.destroy();
+        monthlyOwnershipRevenueChartInstance = new Chart(ctxM2, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              { label: 'มีเจ้าของ (ฟรี)', data: ownedFreeSeries, backgroundColor: '#10b981', borderRadius: 4 },
+              { label: 'มีเจ้าของ (จ่ายเงิน)', data: ownedPaidSeries, backgroundColor: '#0284c7', borderRadius: 4 },
+              { label: 'จรจัด (ฟรี)', data: strayFreeSeries, backgroundColor: '#34d399', borderRadius: 4 },
+              { label: 'จรจัด (จ่ายเงิน)', data: strayPaidSeries, backgroundColor: '#6366f1', borderRadius: 4 },
+              {
+                label: 'ค่าบริการรวม (บาท)',
+                data: revenueSeries,
+                type: 'line',
+                yAxisID: 'y1',
+                borderColor: '#059669',
+                backgroundColor: '#059669',
+                borderWidth: 2,
+                tension: 0.25,
+                pointRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+              y: { beginAtZero: true, position: 'left', ticks: { stepSize: 1 }, title: { display: true, text: 'จำนวนสัตว์ (ตัว)' } },
+              y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'บาท' } }
+            }
+          }
+        });
+      }
+
+      // Render Comprehensive Monthly Comparison Table
+      const tbody = document.getElementById('monthlyComparisonTableBody');
+      const tfoot = document.getElementById('monthlyComparisonTableFoot');
+      if (!tbody || !tfoot) return;
+
+      tbody.innerHTML = '';
+      let sumOwners = 0, sumPets = 0;
+      let sumDogM = 0, sumDogF = 0, sumDogT = 0;
+      let sumCatM = 0, sumCatF = 0, sumCatT = 0;
+      let sumOwnedFree = 0, sumOwnedPaid = 0, sumOwnedT = 0;
+      let sumStrayFree = 0, sumStrayPaid = 0, sumStrayT = 0;
+      let sumRev = 0;
+
+      sortedMonthsDesc.forEach(function(ym) {
+        const st = monthStatsMap[ym];
+        sumOwners += st.ownersCount;
+        sumPets += st.totalPets;
+        sumDogM += st.dogMale;
+        sumDogF += st.dogFemale;
+        sumDogT += st.dogTotal;
+        sumCatM += st.catMale;
+        sumCatF += st.catFemale;
+        sumCatT += st.catTotal;
+        sumOwnedFree += st.ownedFree;
+        sumOwnedPaid += st.ownedPaid;
+        sumOwnedT += st.ownedTotal;
+        sumStrayFree += st.strayFree;
+        sumStrayPaid += st.strayPaid;
+        sumStrayT += st.strayTotal;
+        sumRev += st.revenue;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-teal-50/50 transition';
+        tr.innerHTML =
+          '<td class="py-3 px-3 font-bold text-teal-900 whitespace-nowrap border-r border-slate-200">' +
+            '<button type=\"button\" onclick=\"selectMonthFromComparison(\'' + escapeHtml(ym) + '\')\" class=\"hover:underline text-left flex items-center gap-1.5\">' +
+              '<span>📅 ' + escapeHtml(formatMonthThai(ym)) + '</span>' +
+            '</button>' +
+          '</td>' +
+          '<td class="py-3 px-3 text-center font-bold text-slate-900 border-r border-slate-200">' + st.ownersCount + '</td>' +
+          '<td class="py-3 px-3 text-center font-bold text-blue-800 bg-blue-50/40 border-r border-slate-200">' + st.totalPets + '</td>' +
+          '<td class="py-3 px-2 text-center text-slate-700">' + st.dogMale + '</td>' +
+          '<td class="py-3 px-2 text-center text-slate-700">' + st.dogFemale + '</td>' +
+          '<td class="py-3 px-2 text-center font-bold text-teal-800 bg-teal-50/50 border-r border-slate-200">' + st.dogTotal + '</td>' +
+          '<td class="py-3 px-2 text-center text-slate-700">' + st.catMale + '</td>' +
+          '<td class="py-3 px-2 text-center text-slate-700">' + st.catFemale + '</td>' +
+          '<td class="py-3 px-2 text-center font-bold text-amber-800 bg-amber-50/50 border-r border-slate-200">' + st.catTotal + '</td>' +
+          '<td class="py-3 px-2 text-center text-emerald-700 font-medium">' + st.ownedFree + '</td>' +
+          '<td class="py-3 px-2 text-center text-blue-700 font-medium">' + st.ownedPaid + '</td>' +
+          '<td class="py-3 px-2 text-center font-bold text-slate-900 bg-slate-50 border-r border-slate-200">' + st.ownedTotal + '</td>' +
+          '<td class="py-3 px-2 text-center text-emerald-700 font-medium">' + st.strayFree + '</td>' +
+          '<td class="py-3 px-2 text-center text-blue-700 font-medium">' + st.strayPaid + '</td>' +
+          '<td class="py-3 px-2 text-center font-bold text-slate-900 bg-slate-50 border-r border-slate-200">' + st.strayTotal + '</td>' +
+          '<td class="py-3 px-3 text-right font-bold text-emerald-700 whitespace-nowrap">' + st.revenue.toLocaleString('th-TH') + ' ฿</td>';
+        tbody.appendChild(tr);
+      });
+
+      tfoot.innerHTML =
+        '<tr>' +
+          '<td class="py-3 px-3 font-bold text-slate-900 border-r border-slate-300">รวมทั้งหมด (' + sortedMonthsDesc.length + ' เดือน)</td>' +
+          '<td class="py-3 px-3 text-center font-bold text-slate-900 border-r border-slate-300">' + sumOwners + ' ราย</td>' +
+          '<td class="py-3 px-3 text-center font-bold text-blue-900 border-r border-slate-300">' + sumPets + ' ตัว</td>' +
+          '<td class="py-3 px-2 text-center">' + sumDogM + '</td>' +
+          '<td class="py-3 px-2 text-center">' + sumDogF + '</td>' +
+          '<td class="py-3 px-2 text-center font-bold text-teal-900 border-r border-slate-300">' + sumDogT + '</td>' +
+          '<td class="py-3 px-2 text-center">' + sumCatM + '</td>' +
+          '<td class="py-3 px-2 text-center">' + sumCatF + '</td>' +
+          '<td class="py-3 px-2 text-center font-bold text-amber-900 border-r border-slate-300">' + sumCatT + '</td>' +
+          '<td class="py-3 px-2 text-center text-emerald-800">' + sumOwnedFree + '</td>' +
+          '<td class="py-3 px-2 text-center text-blue-800">' + sumOwnedPaid + '</td>' +
+          '<td class="py-3 px-2 text-center font-bold border-r border-slate-300">' + sumOwnedT + '</td>' +
+          '<td class="py-3 px-2 text-center text-emerald-800">' + sumStrayFree + '</td>' +
+          '<td class="py-3 px-2 text-center text-blue-800">' + sumStrayPaid + '</td>' +
+          '<td class="py-3 px-2 text-center font-bold border-r border-slate-300">' + sumStrayT + '</td>' +
+          '<td class="py-3 px-3 text-right font-bold text-emerald-800 whitespace-nowrap">' + sumRev.toLocaleString('th-TH') + ' บาท</td>' +
+        '</tr>';
     }
 
     function renderDashboardTable(filtered) {
