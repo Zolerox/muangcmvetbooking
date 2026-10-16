@@ -286,7 +286,124 @@
     <!-- ==================== VIEW 2: DASHBOARD ==================== -->
     <section id="viewDashboard" class="hidden space-y-6">
 
-      <!-- Dashboard Header & Month Filter Bar -->
+      <!-- 1. TOP SECTION: Master List Table of Individual Bookings (ทะเบียนรายชื่อผู้รับบริการ อยู่บนสุด + เลือกเดือน + จำกัด 10 หรือ 25 คิวต่อหน้า) -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 bg-slate-800 text-white flex flex-col gap-3.5">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="font-bold text-base sm:text-lg">ทะเบียนรายชื่อผู้รับบริการผ่าตัดทำหมัน (คลิกเพื่อดูรายละเอียด / แก้ไข / ลบ)</h3>
+                <span id="tableResultCount" class="text-xs font-semibold px-3 py-0.5 rounded-full bg-teal-500/20 text-teal-200 border border-teal-400/30">
+                  แสดง 0 รายการ
+                </span>
+              </div>
+              <p class="text-xs text-slate-300 mt-0.5">เมื่อเปลี่ยนสถานะเป็น "✓ ผ่าตัดเสร็จสิ้น" ระบบจะรันรหัส HN48YYMMDDXXX (เริ่มจาก 001 ของวันผ่าตัดนั้นๆ) และนำไปคำนวณในสรุป Dashboard ด้านล่างทันที</p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <button type="button" onclick="switchView('booking')"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-500 text-slate-950 hover:bg-teal-400 transition flex items-center gap-1.5 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>เพิ่มคิวผ่าตัดทำหมันใหม่</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter & Page Size Controls for Registration Table -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 pt-2 border-t border-slate-700/80 items-center">
+            <div class="lg:col-span-3">
+              <label for="tableFilterMonth" class="block text-[11px] font-semibold text-teal-300 mb-1">เลือกเดือนที่นำมาแสดงในทะเบียน:</label>
+              <select id="tableFilterMonth" onchange="handleTableFilterChange()"
+                class="w-full rounded-xl bg-slate-900/90 border border-teal-500/60 px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <option value="ALL">ทุกเดือน (ข้อมูลทั้งหมด)</option>
+              </select>
+            </div>
+
+            <div class="lg:col-span-4">
+              <label for="tableQuickSearch" class="block text-[11px] font-semibold text-slate-300 mb-1">ค้นหารหัส HN48 / ชื่อเจ้าของ / เบอร์โทร / ชื่อสัตว์:</label>
+              <div class="relative">
+                <input type="search" id="tableQuickSearch" oninput="syncSearchInputs(this.value)"
+                  placeholder="พิมพ์รหัส HN48..., ชื่อเจ้าของ, เบอร์โทร, ชื่อสัตว์..."
+                  class="w-full rounded-xl bg-slate-900/90 border border-slate-600 pl-9 pr-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="lg:col-span-2">
+              <label for="filterStatus" class="block text-[11px] font-semibold text-slate-300 mb-1">สถานะคิว:</label>
+              <select id="filterStatus" onchange="handleTableFilterChange()"
+                class="w-full rounded-xl bg-slate-900/90 border border-slate-600 px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <option value="ALL">ทุกสถานะคิว</option>
+                <option value="รอดำเนินการ">รอดำเนินการ</option>
+                <option value="ผ่าตัดเสร็จสิ้น">ผ่าตัดเสร็จสิ้น</option>
+                <option value="ยกเลิกคิว">ยกเลิกคิว</option>
+              </select>
+            </div>
+
+            <div class="lg:col-span-2">
+              <label for="tablePageSizeSelect" class="block text-[11px] font-semibold text-amber-300 mb-1">จำนวนที่แสดงต่อหน้า:</label>
+              <select id="tablePageSizeSelect" onchange="changeTablePageSize(this.value)"
+                class="w-full rounded-xl bg-slate-900/90 border border-amber-400/60 px-3 py-2 text-xs font-bold text-amber-200 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                <option value="10" selected>แสดง 10 คิว / หน้า</option>
+                <option value="25">แสดง 25 คิว / หน้า</option>
+              </select>
+            </div>
+
+            <div class="lg:col-span-1 flex items-end h-full">
+              <button type="button" onclick="resetDashboardFilters()"
+                class="w-full mt-auto px-2.5 py-2 rounded-xl text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-slate-200 transition whitespace-nowrap">
+                ล้างตัวกรอง
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 text-xs font-bold border-b border-slate-200">
+                <th class="py-3 px-3.5 whitespace-nowrap">รหัสคิว (HN48)</th>
+                <th class="py-3 px-3.5 whitespace-nowrap">วัน-เวลาที่จองคิว</th>
+                <th class="py-3 px-3.5">ชื่อ-สกุล เจ้าของสัตว์</th>
+                <th class="py-3 px-3.5 whitespace-nowrap">เบอร์โทรศัพท์</th>
+                <th class="py-3 px-3.5 text-center whitespace-nowrap">จำนวนสัตว์</th>
+                <th class="py-3 px-3.5">รายละเอียดสัตว์ (ชนิด/เพศ/ประเภท)</th>
+                <th class="py-3 px-3.5 text-right whitespace-nowrap">ราคาค่าบริการ</th>
+                <th class="py-3 px-3.5 text-center whitespace-nowrap">สถานะ</th>
+                <th class="py-3 px-3.5 text-center whitespace-nowrap">การจัดการ (ดู / แก้ไข / ลบ)</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardTableBody" class="divide-y divide-slate-200 text-sm"></tbody>
+          </table>
+        </div>
+
+        <!-- Pagination Footer Bar -->
+        <div class="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-2 text-xs text-slate-600">
+            <span id="tablePaginationSummary" class="font-semibold text-slate-800">แสดง 0 - 0 จาก 0 คิว</span>
+            <span class="text-slate-400">•</span>
+            <span>แสดงหน้าละ:</span>
+            <div class="inline-flex rounded-lg border border-slate-300 bg-white overflow-hidden">
+              <button type="button" id="btnPageSize10" onclick="changeTablePageSize(10)"
+                class="px-2.5 py-1 text-xs font-bold bg-teal-600 text-white transition">
+                10 คิว
+              </button>
+              <button type="button" id="btnPageSize25" onclick="changeTablePageSize(25)"
+                class="px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 transition">
+                25 คิว
+              </button>
+            </div>
+          </div>
+
+          <div id="tablePaginationControls" class="flex flex-wrap items-center gap-1.5"></div>
+        </div>
+      </div>
+
+      <!-- 2. MIDDLE SECTION: Dashboard Summary & Filter Bar -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-slate-100">
           <div class="flex items-start gap-3">
@@ -306,13 +423,6 @@
           </div>
 
           <div class="flex flex-wrap items-center gap-2">
-            <button type="button" onclick="switchView('booking')"
-              class="px-4 py-2 rounded-xl text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition flex items-center gap-1.5">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-              </svg>
-              <span>เพิ่มคิวผ่าตัดทำหมันใหม่</span>
-            </button>
             <button type="button" onclick="exportFilteredCsv()"
               class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 transition flex items-center gap-1.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,7 +437,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-4">
           <div>
             <label for="filterMonth" class="block text-xs font-bold text-teal-900 mb-1">
-              เลือกเดือนที่ให้บริการ (แยกตามรายเดือน)
+              เลือกเดือนที่ต้องการดูสรุป Dashboard
             </label>
             <select id="filterMonth" onchange="renderDashboard()"
               class="w-full rounded-xl border-2 border-teal-600 bg-teal-50/50 px-3 py-2 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-600">
@@ -463,10 +573,9 @@
         </div>
       </div>
 
-      <!-- ==================== MONTHLY COMPARISON DASHBOARD SECTION ==================== -->
+      <!-- 3. BOTTOM SECTION: Monthly Comparison Table Only (ตารางเปรียบเทียบข้อมูลสถิติรายเดือน ไม่ต้องใส่กราฟ) -->
       <div class="bg-white rounded-2xl border-2 border-teal-600/25 shadow-sm overflow-hidden">
-        <!-- Section Header & Controls -->
-        <div class="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-white px-5 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div class="bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-white px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div class="flex items-start gap-3">
             <div class="w-9 h-9 rounded-xl bg-teal-400/20 border border-teal-300/30 text-teal-200 flex items-center justify-center shrink-0 mt-0.5 font-bold text-sm">
               📊
@@ -474,220 +583,59 @@
             <div>
               <div class="flex flex-wrap items-center gap-2">
                 <h3 class="font-bold text-base sm:text-lg text-white">
-                  Dashboard เปรียบเทียบข้อมูลสถิติรายเดือน (ครบทุกมิติ)
+                  ตารางเปรียบเทียบข้อมูลสถิติรายเดือน (สรุปครบทุกหมวดหมู่ใน Dashboard)
                 </h3>
                 <span id="monthlyCountBadge" class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-teal-400 text-slate-950">
                   0 เดือน
                 </span>
               </div>
               <p class="text-xs text-teal-100/85 mt-0.5">
-                เปรียบเทียบข้อมูลผ่าตัดเสร็จสิ้นรายเดือน: ผู้รับบริการ • ชนิดและเพศสัตว์ • มีเจ้าของ/จรจัด (แยกฟรี/มีค่าใช้จ่าย) • รายได้ค่าบริการรวม
+                เปรียบเทียบข้อมูลผ่าตัดเสร็จสิ้นแยกตามรายเดือน • คลิกที่ชื่อเดือนในตารางเพื่อกรองดูเฉพาะเดือนนั้นได้ทันที
               </p>
             </div>
           </div>
 
-          <!-- Month A vs Month B Quick Comparator & Year Filter -->
-          <div class="flex flex-wrap items-center gap-2 text-xs">
-            <div class="flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-xl px-2.5 py-1.5">
-              <span class="text-teal-200 font-semibold">ปี:</span>
+          <div class="flex items-center gap-2 text-xs shrink-0">
+            <div class="flex items-center gap-1.5 bg-white/10 border border-white/15 rounded-xl px-3 py-1.5">
+              <span class="text-teal-200 font-semibold">เลือกปี:</span>
               <select id="compareYearSelect" onchange="renderMonthlyComparison()"
-                class="bg-slate-900 text-white font-bold rounded-lg px-2 py-1 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-400">
+                class="bg-slate-900 text-white font-bold rounded-lg px-2.5 py-1 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-400">
                 <option value="ALL">ทุกปี</option>
               </select>
             </div>
-
-            <div class="flex flex-wrap items-center gap-1.5 bg-white/10 border border-white/15 rounded-xl px-2.5 py-1.5">
-              <span class="text-amber-300 font-bold">เทียบเดือน:</span>
-              <select id="compareMonthA" onchange="renderMonthlyComparison(true)"
-                aria-label="เลือกเดือนตั้งต้นสำหรับเปรียบเทียบ"
-                class="bg-slate-900 text-white font-semibold rounded-lg px-2 py-1 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-400">
-              </select>
-              <span class="text-teal-200 font-bold">กับ</span>
-              <select id="compareMonthB" onchange="renderMonthlyComparison(true)"
-                aria-label="เลือกเดือนเปรียบเทียบ"
-                class="bg-slate-900 text-white font-semibold rounded-lg px-2 py-1 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-teal-400">
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-5 space-y-6">
-          <!-- Month A vs Month B Direct Comparison Cards -->
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-              <div class="text-xs font-bold text-slate-500 flex items-center justify-between">
-                <span>เปรียบเทียบผู้รับบริการ</span>
-                <span id="momOwnersDiffBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">-</span>
-              </div>
-              <div id="momOwnersMain" class="text-lg font-bold text-slate-900 mt-1.5">0 vs 0 ราย</div>
-              <div id="momOwnersSub" class="text-[11px] text-slate-500 mt-1">เลือกเดือนเพื่อเปรียบเทียบ</div>
-            </div>
-
-            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-              <div class="text-xs font-bold text-slate-500 flex items-center justify-between">
-                <span>เปรียบเทียบสัตว์ทำหมันรวม</span>
-                <span id="momPetsDiffBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">-</span>
-              </div>
-              <div id="momPetsMain" class="text-lg font-bold text-slate-900 mt-1.5">0 vs 0 ตัว</div>
-              <div id="momPetsSub" class="text-[11px] text-slate-600 mt-1">สุนัข 0 vs 0 • แมว 0 vs 0</div>
-            </div>
-
-            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-              <div class="text-xs font-bold text-slate-500 flex items-center justify-between">
-                <span>เปรียบเทียบมีเจ้าของ / จรจัด</span>
-                <span id="momOwnershipDiffBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">Subset</span>
-              </div>
-              <div id="momOwnershipMain" class="text-sm font-bold text-slate-900 mt-1.5">มีเจ้าของ 0 vs 0 • จรจัด 0 vs 0</div>
-              <div id="momOwnershipSub" class="text-[11px] text-slate-600 mt-1">ฟรี 0 vs 0 • จ่ายเงิน 0 vs 0</div>
-            </div>
-
-            <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-              <div class="text-xs font-bold text-slate-500 flex items-center justify-between">
-                <span>เปรียบเทียบค่าบริการรวม</span>
-                <span id="momRevenueDiffBadge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700">-</span>
-              </div>
-              <div id="momRevenueMain" class="text-lg font-bold text-emerald-700 mt-1.5">0 vs 0 บาท</div>
-              <div id="momRevenueSub" class="text-[11px] text-slate-600 mt-1">ส่วนต่างค่าบริการรายเดือน</div>
-            </div>
-          </div>
-
-          <!-- Monthly Comparison Charts (2 Side-by-Side Charts) -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div class="rounded-2xl border border-slate-200 p-4 bg-white">
-              <div class="mb-3">
-                <h4 class="font-bold text-sm sm:text-base text-slate-900">
-                  กราฟเปรียบเทียบรายเดือน: ชนิดและเพศสัตว์ & จำนวนผู้รับบริการ
-                </h4>
-                <p class="text-xs text-slate-500">
-                  เปรียบเทียบจำนวนสุนัข (ผู้/เมีย), แมว (ผู้/เมีย) และจำนวนผู้รับบริการ (ราย) ในแต่ละเดือน
-                </p>
-              </div>
-              <div class="relative h-64">
-                <canvas id="monthlySpeciesTrendChart"></canvas>
-              </div>
-            </div>
-
-            <div class="rounded-2xl border border-slate-200 p-4 bg-white">
-              <div class="mb-3">
-                <h4 class="font-bold text-sm sm:text-base text-slate-900">
-                  กราฟเปรียบเทียบรายเดือน: ประเภทสัตว์ (Subset ฟรี/จ่ายเงิน) & รายได้รวม
-                </h4>
-                <p class="text-xs text-slate-500">
-                  เปรียบเทียบสัตว์มีเจ้าของ (ฟรี/จ่ายเงิน), สัตว์จรจัด (ฟรี/จ่ายเงิน) และยอดรวมค่าบริการ (บาท) รายเดือน
-                </p>
-              </div>
-              <div class="relative h-64">
-                <canvas id="monthlyOwnershipRevenueChart"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <!-- Comprehensive Monthly Comparison Table -->
-          <div class="rounded-2xl border border-slate-200 overflow-hidden">
-            <div class="bg-slate-100 px-4 py-3 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h4 class="font-bold text-sm text-slate-900">
-                  ตารางเปรียบเทียบข้อมูลสถิติรายเดือน (สรุปครบทุกหมวดหมู่ใน Dashboard)
-                </h4>
-                <p class="text-xs text-slate-500">
-                  คลิกที่ชื่อเดือนในตารางเพื่อกรองดูเฉพาะเดือนนั้นใน Dashboard ด้านบนได้ทันที
-                </p>
-              </div>
-              <span class="text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-                นับเฉพาะเคสยืนยันผ่าตัดเสร็จสิ้น
-              </span>
-            </div>
-
-            <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse text-xs sm:text-sm">
-                <thead>
-                  <tr class="bg-slate-800 text-white text-xs font-bold">
-                    <th class="py-3 px-3 whitespace-nowrap border-r border-slate-700" rowspan="2">เดือนที่ให้บริการ</th>
-                    <th class="py-3 px-3 text-center whitespace-nowrap border-r border-slate-700" rowspan="2">ผู้รับบริการ<br>(ราย)</th>
-                    <th class="py-3 px-3 text-center whitespace-nowrap border-r border-slate-700" rowspan="2">สัตว์รวม<br>(ตัว)</th>
-                    <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-teal-900/60" colspan="3">🐕 สุนัข (ตัว)</th>
-                    <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-amber-900/60" colspan="3">🐈 แมว (ตัว)</th>
-                    <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-teal-950/80" colspan="3">🏠 สัตว์มีเจ้าของ (Subset)</th>
-                    <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-amber-950/80" colspan="3">🐾 สัตว์จรจัด (Subset)</th>
-                    <th class="py-3 px-3 text-right whitespace-nowrap" rowspan="2">รวมค่าบริการ<br>(บาท)</th>
-                  </tr>
-                  <tr class="bg-slate-700 text-slate-100 text-[11px] font-bold">
-                    <th class="py-1.5 px-2 text-center">ผู้</th>
-                    <th class="py-1.5 px-2 text-center">เมีย</th>
-                    <th class="py-1.5 px-2 text-center border-r border-slate-600 text-teal-300">รวม</th>
-                    <th class="py-1.5 px-2 text-center">ผู้</th>
-                    <th class="py-1.5 px-2 text-center">เมีย</th>
-                    <th class="py-1.5 px-2 text-center border-r border-slate-600 text-amber-300">รวม</th>
-                    <th class="py-1.5 px-2 text-center text-emerald-300">ฟรี</th>
-                    <th class="py-1.5 px-2 text-center text-sky-300">จ่ายเงิน</th>
-                    <th class="py-1.5 px-2 text-center border-r border-slate-600 text-white">รวม</th>
-                    <th class="py-1.5 px-2 text-center text-emerald-300">ฟรี</th>
-                    <th class="py-1.5 px-2 text-center text-sky-300">จ่ายเงิน</th>
-                    <th class="py-1.5 px-2 text-center border-r border-slate-600 text-white">รวม</th>
-                  </tr>
-                </thead>
-                <tbody id="monthlyComparisonTableBody" class="divide-y divide-slate-200"></tbody>
-                <tfoot id="monthlyComparisonTableFoot" class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300"></tfoot>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Master List Table of Individual Bookings -->
-      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="px-5 py-4 bg-slate-800 text-white flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-          <div>
-            <div class="flex flex-wrap items-center gap-2">
-              <h3 class="font-bold text-base">ทะเบียนรายชื่อผู้รับบริการผ่าตัดทำหมัน (คลิกเพื่อดูรายละเอียด / แก้ไข / ลบ)</h3>
-              <span id="tableResultCount" class="text-xs font-semibold px-3 py-0.5 rounded-full bg-teal-500/20 text-teal-200 border border-teal-400/30">
-                แสดง 0 รายการ
-              </span>
-            </div>
-            <p class="text-xs text-slate-300 mt-0.5">เมื่อเปลี่ยนสถานะเป็น "✓ ผ่าตัดเสร็จสิ้น" ระบบจะรันรหัส HN48YYMMDDXXX (เริ่มจาก 001) และนำไปคำนวณในสรุป Dashboard ทันที</p>
-          </div>
-
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="relative flex-1 sm:w-72">
-              <input type="search" id="tableQuickSearch" oninput="syncSearchInputs(this.value)"
-                placeholder="ค้นหารหัส HN48..., ชื่อเจ้าของ, เบอร์โทร, ชื่อสัตว์..."
-                class="w-full rounded-xl bg-slate-900/90 border border-slate-600 pl-9 pr-3 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-400">
-              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-            </div>
-
-            <select id="filterStatus" onchange="renderDashboard()"
-              class="rounded-xl bg-slate-900/90 border border-slate-600 px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
-              <option value="ALL">ทุกสถานะคิว</option>
-              <option value="รอดำเนินการ">รอดำเนินการ</option>
-              <option value="ผ่าตัดเสร็จสิ้น">ผ่าตัดเสร็จสิ้น</option>
-              <option value="ยกเลิกคิว">ยกเลิกคิว</option>
-            </select>
-
-            <button type="button" onclick="resetDashboardFilters()"
-              class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-700 hover:bg-slate-600 text-slate-200 transition">
-              ล้างตัวกรอง
-            </button>
           </div>
         </div>
 
         <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
             <thead>
-              <tr class="bg-slate-100 text-slate-700 text-xs font-bold border-b border-slate-200">
-                <th class="py-3 px-3.5 whitespace-nowrap">รหัสคิว (HN48)</th>
-                <th class="py-3 px-3.5 whitespace-nowrap">วัน-เวลาที่จองคิว</th>
-                <th class="py-3 px-3.5">ชื่อ-สกุล เจ้าของสัตว์</th>
-                <th class="py-3 px-3.5 whitespace-nowrap">เบอร์โทรศัพท์</th>
-                <th class="py-3 px-3.5 text-center whitespace-nowrap">จำนวนสัตว์</th>
-                <th class="py-3 px-3.5">รายละเอียดสัตว์ (ชนิด/เพศ/ประเภท)</th>
-                <th class="py-3 px-3.5 text-right whitespace-nowrap">ราคาค่าบริการ</th>
-                <th class="py-3 px-3.5 text-center whitespace-nowrap">สถานะ</th>
-                <th class="py-3 px-3.5 text-center whitespace-nowrap">การจัดการ (ดู / แก้ไข / ลบ)</th>
+              <tr class="bg-slate-800 text-white text-xs font-bold">
+                <th class="py-3 px-3 whitespace-nowrap border-r border-slate-700" rowspan="2">เดือนที่ให้บริการ</th>
+                <th class="py-3 px-3 text-center whitespace-nowrap border-r border-slate-700" rowspan="2">ผู้รับบริการ<br>(ราย)</th>
+                <th class="py-3 px-3 text-center whitespace-nowrap border-r border-slate-700" rowspan="2">สัตว์รวม<br>(ตัว)</th>
+                <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-teal-900/60" colspan="3">🐕 สุนัข (ตัว)</th>
+                <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-amber-900/60" colspan="3">🐈 แมว (ตัว)</th>
+                <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-teal-950/80" colspan="3">🏠 สัตว์มีเจ้าของ (Subset)</th>
+                <th class="py-2 px-3 text-center border-b border-r border-slate-700 bg-amber-950/80" colspan="3">🐾 สัตว์จรจัด (Subset)</th>
+                <th class="py-3 px-3 text-right whitespace-nowrap" rowspan="2">รวมค่าบริการ<br>(บาท)</th>
+              </tr>
+              <tr class="bg-slate-700 text-slate-100 text-[11px] font-bold">
+                <th class="py-1.5 px-2 text-center">ผู้</th>
+                <th class="py-1.5 px-2 text-center">เมีย</th>
+                <th class="py-1.5 px-2 text-center border-r border-slate-600 text-teal-300">รวม</th>
+                <th class="py-1.5 px-2 text-center">ผู้</th>
+                <th class="py-1.5 px-2 text-center">เมีย</th>
+                <th class="py-1.5 px-2 text-center border-r border-slate-600 text-amber-300">รวม</th>
+                <th class="py-1.5 px-2 text-center text-emerald-300">ฟรี</th>
+                <th class="py-1.5 px-2 text-center text-sky-300">จ่ายเงิน</th>
+                <th class="py-1.5 px-2 text-center border-r border-slate-600 text-white">รวม</th>
+                <th class="py-1.5 px-2 text-center text-emerald-300">ฟรี</th>
+                <th class="py-1.5 px-2 text-center text-sky-300">จ่ายเงิน</th>
+                <th class="py-1.5 px-2 text-center border-r border-slate-600 text-white">รวม</th>
               </tr>
             </thead>
-            <tbody id="dashboardTableBody" class="divide-y divide-slate-200 text-sm"></tbody>
+            <tbody id="monthlyComparisonTableBody" class="divide-y divide-slate-200"></tbody>
+            <tfoot id="monthlyComparisonTableFoot" class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300"></tfoot>
           </table>
         </div>
       </div>
@@ -1070,8 +1018,8 @@
     let pendingDeleteBookingId = null;
     let speciesGenderChartInstance = null;
     let ownershipPriceChartInstance = null;
-    let monthlySpeciesTrendChartInstance = null;
-    let monthlyOwnershipRevenueChartInstance = null;
+    let tableCurrentPage = 1;
+    let tablePageSize = 10;
 
     const THAI_MONTH_NAMES = {
       '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
@@ -2044,23 +1992,62 @@
       const tableInput = document.getElementById('tableQuickSearch');
       if (topInput && topInput.value !== val) topInput.value = val;
       if (tableInput && tableInput.value !== val) tableInput.value = val;
+      tableCurrentPage = 1;
+      renderDashboard();
+    }
+
+    function handleTableFilterChange() {
+      tableCurrentPage = 1;
+      renderDashboard();
+    }
+
+    function changeTablePageSize(newSize) {
+      const parsed = parseInt(newSize, 10);
+      tablePageSize = (parsed === 25) ? 25 : 10;
+      tableCurrentPage = 1;
+      const sel = document.getElementById('tablePageSizeSelect');
+      if (sel && String(sel.value) !== String(tablePageSize)) {
+        sel.value = String(tablePageSize);
+      }
+      const btn10 = document.getElementById('btnPageSize10');
+      const btn25 = document.getElementById('btnPageSize25');
+      if (btn10 && btn25) {
+        if (tablePageSize === 10) {
+          btn10.className = 'px-2.5 py-1 text-xs font-bold bg-teal-600 text-white transition';
+          btn25.className = 'px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 transition';
+        } else {
+          btn25.className = 'px-2.5 py-1 text-xs font-bold bg-teal-600 text-white transition';
+          btn10.className = 'px-2.5 py-1 text-xs font-bold text-slate-700 hover:bg-slate-100 transition';
+        }
+      }
+      renderDashboard();
+    }
+
+    function goToTablePage(pageNum) {
+      tableCurrentPage = Math.max(1, parseInt(pageNum, 10) || 1);
       renderDashboard();
     }
 
     function resetDashboardFilters() {
-      document.getElementById('filterMonth').value = 'ALL';
+      const fm = document.getElementById('filterMonth');
+      const tfm = document.getElementById('tableFilterMonth');
+      if (fm) fm.value = 'ALL';
+      if (tfm) tfm.value = 'ALL';
       document.getElementById('filterSpecies').value = 'ALL';
       document.getElementById('filterOwnership').value = 'ALL';
       document.getElementById('filterStatus').value = 'ALL';
       document.getElementById('filterSearch').value = '';
       document.getElementById('tableQuickSearch').value = '';
+      tableCurrentPage = 1;
       renderDashboard();
       showToast('ล้างตัวกรองและคำค้นหาทั้งหมดแล้ว');
     }
 
     function refreshMonthDropdown() {
-      const select = document.getElementById('filterMonth');
-      const currentVal = select.value || 'ALL';
+      const selectDash = document.getElementById('filterMonth');
+      const selectTable = document.getElementById('tableFilterMonth');
+      const currentDashVal = selectDash ? (selectDash.value || 'ALL') : 'ALL';
+      const currentTableVal = selectTable ? (selectTable.value || 'ALL') : 'ALL';
       const bkk = getBangkokNowParts();
       const monthSet = new Set([bkk.date.substring(0, 7)]);
 
@@ -2071,21 +2058,40 @@
       });
 
       const sortedMonths = Array.from(monthSet).sort().reverse();
-      select.innerHTML = '<option value="ALL">ทุกเดือน (ข้อมูลทั้งหมด)</option>';
-      sortedMonths.forEach(function(ym) {
-        const opt = document.createElement('option');
-        opt.value = ym;
-        opt.textContent = formatMonthThai(ym);
-        select.appendChild(opt);
-      });
 
-      if (sortedMonths.indexOf(currentVal) !== -1 || currentVal === 'ALL') {
-        select.value = currentVal;
+      if (selectDash) {
+        selectDash.innerHTML = '<option value="ALL">ทุกเดือน (ข้อมูลทั้งหมด)</option>';
+        sortedMonths.forEach(function(ym) {
+          const opt = document.createElement('option');
+          opt.value = ym;
+          opt.textContent = formatMonthThai(ym);
+          selectDash.appendChild(opt);
+        });
+        if (sortedMonths.indexOf(currentDashVal) !== -1 || currentDashVal === 'ALL') {
+          selectDash.value = currentDashVal;
+        }
+      }
+
+      if (selectTable) {
+        selectTable.innerHTML = '<option value="ALL">ทุกเดือน (ข้อมูลทั้งหมด)</option>';
+        sortedMonths.forEach(function(ym) {
+          const opt = document.createElement('option');
+          opt.value = ym;
+          opt.textContent = formatMonthThai(ym);
+          selectTable.appendChild(opt);
+        });
+        if (sortedMonths.indexOf(currentTableVal) !== -1 || currentTableVal === 'ALL') {
+          selectTable.value = currentTableVal;
+        }
       }
     }
 
     function getFilteredBookings(forceOnlyCompleted) {
-      const monthFilter = document.getElementById('filterMonth').value;
+      const dashMonthEl = document.getElementById('filterMonth');
+      const tableMonthEl = document.getElementById('tableFilterMonth');
+      const monthFilter = forceOnlyCompleted
+        ? (dashMonthEl ? dashMonthEl.value : 'ALL')
+        : (tableMonthEl ? tableMonthEl.value : 'ALL');
       const speciesFilter = document.getElementById('filterSpecies').value;
       const ownershipFilter = document.getElementById('filterOwnership').value;
       const statusEl = document.getElementById('filterStatus');
@@ -2206,11 +2212,11 @@
       document.getElementById('subsetStrayPaid').textContent = strayPaid + ' ตัว';
 
       const tablePetsCount = tableFiltered.reduce(function(acc, item) { return acc + item.matchedPets.length; }, 0);
-      document.getElementById('tableResultCount').textContent = 'แสดงในตาราง ' + tableFiltered.length + ' ราย (' + tablePetsCount + ' ตัว)';
+      document.getElementById('tableResultCount').textContent = 'พบทั้งหมด ' + tableFiltered.length + ' คิว (' + tablePetsCount + ' ตัว)';
 
+      renderDashboardTable(tableFiltered);
       renderCharts(dogMale, dogFemale, catMale, catFemale, ownedFree, ownedPaid, strayFree, strayPaid);
       renderMonthlyComparison();
-      renderDashboardTable(tableFiltered);
     }
 
     function renderCharts(dogMale, dogFemale, catMale, catFemale, ownedFree, ownedPaid, strayFree, strayPaid) {
@@ -2274,45 +2280,17 @@
       });
     }
 
-    function formatShortMonthThai(yyyyMm) {
-      if (!yyyyMm) return '-';
-      const parts = String(yyyyMm).split('-');
-      if (parts.length !== 2) return yyyyMm;
-      const shortMonths = {
-        '01': 'ม.ค.', '02': 'ก.พ.', '03': 'มี.ค.', '04': 'เม.ย.',
-        '05': 'พ.ค.', '06': 'มิ.ย.', '07': 'ก.ค.', '08': 'ส.ค.',
-        '09': 'ก.ย.', '10': 'ต.ค.', '11': 'พ.ย.', '12': 'ธ.ค.'
-      };
-      const by = (Number(parts[0]) + 543) % 100;
-      return (shortMonths[parts[1]] || parts[1]) + ' ' + by;
-    }
-
     function selectMonthFromComparison(yyyyMm) {
-      const sel = document.getElementById('filterMonth');
-      if (!sel) return;
-      sel.value = yyyyMm;
+      const selDash = document.getElementById('filterMonth');
+      const selTable = document.getElementById('tableFilterMonth');
+      if (selDash) selDash.value = yyyyMm;
+      if (selTable) selTable.value = yyyyMm;
+      tableCurrentPage = 1;
       renderDashboard();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      showToast('กรองข้อมูล Dashboard เฉพาะเดือน ' + formatMonthThai(yyyyMm) + ' แล้ว');
+      showToast('กรองข้อมูลเฉพาะเดือน ' + formatMonthThai(yyyyMm) + ' แล้ว');
     }
 
-    function renderDiffBadge(elId, valA, valB, unit) {
-      const el = document.getElementById(elId);
-      if (!el) return;
-      const diff = valA - valB;
-      if (diff > 0) {
-        el.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300';
-        el.textContent = '▲ +' + diff.toLocaleString('th-TH') + ' ' + unit;
-      } else if (diff < 0) {
-        el.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-100 text-rose-800 border border-rose-300';
-        el.textContent = '▼ ' + diff.toLocaleString('th-TH') + ' ' + unit;
-      } else {
-        el.className = 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-200 text-slate-700';
-        el.textContent = '= เท่ากัน';
-      }
-    }
-
-    function renderMonthlyComparison(keepMonthSelectors) {
+    function renderMonthlyComparison() {
       const speciesFilter = document.getElementById('filterSpecies') ? document.getElementById('filterSpecies').value : 'ALL';
       const ownershipFilter = document.getElementById('filterOwnership') ? document.getElementById('filterOwnership').value : 'ALL';
       const searchStr = document.getElementById('filterSearch') ? document.getElementById('filterSearch').value.trim().toLowerCase() : '';
@@ -2337,16 +2315,12 @@
             catMale: 0,
             catFemale: 0,
             catTotal: 0,
-            maleTotal: 0,
-            femaleTotal: 0,
             ownedFree: 0,
             ownedPaid: 0,
             ownedTotal: 0,
             strayFree: 0,
             strayPaid: 0,
             strayTotal: 0,
-            freeTotal: 0,
-            paidTotal: 0,
             revenue: 0
           };
         }
@@ -2399,8 +2373,6 @@
             if (p.gender === 'ผู้') bucket.catMale++; else bucket.catFemale++;
           }
 
-          if (p.gender === 'ผู้') bucket.maleTotal++; else bucket.femaleTotal++;
-
           const isFree = (p.priceType === 'ฟรี' || Number(p.priceAmount) === 0);
           const priceAmt = isFree ? 0 : Number(p.priceAmount || 0);
 
@@ -2412,10 +2384,7 @@
             if (isFree) bucket.strayFree++; else bucket.strayPaid++;
           }
 
-          if (isFree) {
-            bucket.freeTotal++;
-          } else {
-            bucket.paidTotal++;
+          if (!isFree) {
             bucket.revenue += priceAmt;
           }
         });
@@ -2425,7 +2394,6 @@
         ensureMonthBucket(currentYm);
       }
 
-      // Populate Year Dropdown
       if (yearSelect) {
         const prevYear = yearSelect.value || 'ALL';
         const sortedYears = Array.from(allYearsSet).sort().reverse();
@@ -2441,165 +2409,12 @@
         }
       }
 
-      const sortedMonthsAsc = Object.keys(monthStatsMap).sort();
-      const sortedMonthsDesc = sortedMonthsAsc.slice().reverse();
-
+      const sortedMonthsDesc = Object.keys(monthStatsMap).sort().reverse();
       const badgeEl = document.getElementById('monthlyCountBadge');
       if (badgeEl) {
-        badgeEl.textContent = sortedMonthsAsc.length + ' เดือนที่มีข้อมูล';
+        badgeEl.textContent = sortedMonthsDesc.length + ' เดือนที่มีข้อมูล';
       }
 
-      // Populate Month A vs Month B dropdowns
-      const selA = document.getElementById('compareMonthA');
-      const selB = document.getElementById('compareMonthB');
-      if (selA && selB && !keepMonthSelectors) {
-        const prevA = selA.value;
-        const prevB = selB.value;
-        selA.innerHTML = '';
-        selB.innerHTML = '';
-        sortedMonthsDesc.forEach(function(ym) {
-          const optA = document.createElement('option');
-          optA.value = ym;
-          optA.textContent = formatMonthThai(ym);
-          selA.appendChild(optA);
-
-          const optB = document.createElement('option');
-          optB.value = ym;
-          optB.textContent = formatMonthThai(ym);
-          selB.appendChild(optB);
-        });
-
-        if (sortedMonthsDesc.indexOf(prevA) !== -1) {
-          selA.value = prevA;
-        } else if (sortedMonthsDesc.length > 0) {
-          selA.value = sortedMonthsDesc[0];
-        }
-
-        if (sortedMonthsDesc.indexOf(prevB) !== -1) {
-          selB.value = prevB;
-        } else if (sortedMonthsDesc.length > 1) {
-          selB.value = sortedMonthsDesc[1];
-        } else if (sortedMonthsDesc.length > 0) {
-          selB.value = sortedMonthsDesc[0];
-        }
-      }
-
-      // Render Month A vs Month B comparison cards
-      const ymA = selA && selA.value ? selA.value : sortedMonthsDesc[0];
-      const ymB = selB && selB.value ? selB.value : (sortedMonthsDesc[1] || sortedMonthsDesc[0]);
-      const statA = monthStatsMap[ymA] || ensureMonthBucket(ymA);
-      const statB = monthStatsMap[ymB] || ensureMonthBucket(ymB);
-      const shortA = formatShortMonthThai(ymA);
-      const shortB = formatShortMonthThai(ymB);
-
-      renderDiffBadge('momOwnersDiffBadge', statA.ownersCount, statB.ownersCount, 'ราย');
-      document.getElementById('momOwnersMain').textContent =
-        shortA + ': ' + statA.ownersCount + ' ราย vs ' + shortB + ': ' + statB.ownersCount + ' ราย';
-      document.getElementById('momOwnersSub').textContent =
-        'เปรียบเทียบจำนวนผู้รับบริการที่ผ่าตัดเสร็จสิ้น';
-
-      renderDiffBadge('momPetsDiffBadge', statA.totalPets, statB.totalPets, 'ตัว');
-      document.getElementById('momPetsMain').textContent =
-        shortA + ': ' + statA.totalPets + ' ตัว vs ' + shortB + ': ' + statB.totalPets + ' ตัว';
-      document.getElementById('momPetsSub').textContent =
-        'สุนัข ' + statA.dogTotal + ' vs ' + statB.dogTotal + ' ตัว • แมว ' + statA.catTotal + ' vs ' + statB.catTotal + ' ตัว';
-
-      document.getElementById('momOwnershipMain').textContent =
-        'มีเจ้าของ ' + statA.ownedTotal + ' vs ' + statB.ownedTotal + ' • จรจัด ' + statA.strayTotal + ' vs ' + statB.strayTotal;
-      document.getElementById('momOwnershipSub').textContent =
-        'มีเจ้าของ(ฟรี ' + statA.ownedFree + '/' + statB.ownedFree + ' จ่าย ' + statA.ownedPaid + '/' + statB.ownedPaid + ') • จรจัด(ฟรี ' + statA.strayFree + '/' + statB.strayFree + ' จ่าย ' + statA.strayPaid + '/' + statB.strayPaid + ')';
-
-      renderDiffBadge('momRevenueDiffBadge', statA.revenue, statB.revenue, 'บาท');
-      document.getElementById('momRevenueMain').textContent =
-        statA.revenue.toLocaleString('th-TH') + ' vs ' + statB.revenue.toLocaleString('th-TH') + ' บาท';
-      document.getElementById('momRevenueSub').textContent =
-        shortA + ' เทียบกับ ' + shortB;
-
-      // Render Monthly Comparison Charts
-      if (typeof Chart !== 'undefined') {
-        const labels = sortedMonthsAsc.map(function(ym) { return formatShortMonthThai(ym); });
-        const dogMaleSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].dogMale; });
-        const dogFemaleSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].dogFemale; });
-        const catMaleSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].catMale; });
-        const catFemaleSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].catFemale; });
-        const ownersSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].ownersCount; });
-
-        const ctxM1 = document.getElementById('monthlySpeciesTrendChart').getContext('2d');
-        if (monthlySpeciesTrendChartInstance) monthlySpeciesTrendChartInstance.destroy();
-        monthlySpeciesTrendChartInstance = new Chart(ctxM1, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [
-              { label: 'สุนัข (ผู้)', data: dogMaleSeries, backgroundColor: '#0d9488', borderRadius: 4 },
-              { label: 'สุนัข (เมีย)', data: dogFemaleSeries, backgroundColor: '#2dd4bf', borderRadius: 4 },
-              { label: 'แมว (ผู้)', data: catMaleSeries, backgroundColor: '#d97706', borderRadius: 4 },
-              { label: 'แมว (เมีย)', data: catFemaleSeries, backgroundColor: '#fbbf24', borderRadius: 4 },
-              {
-                label: 'ผู้รับบริการ (ราย)',
-                data: ownersSeries,
-                type: 'line',
-                borderColor: '#1e293b',
-                backgroundColor: '#1e293b',
-                borderWidth: 2,
-                tension: 0.25,
-                pointRadius: 4
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' } },
-            scales: {
-              y: { beginAtZero: true, ticks: { stepSize: 1 } }
-            }
-          }
-        });
-
-        const ownedFreeSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].ownedFree; });
-        const ownedPaidSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].ownedPaid; });
-        const strayFreeSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].strayFree; });
-        const strayPaidSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].strayPaid; });
-        const revenueSeries = sortedMonthsAsc.map(function(ym) { return monthStatsMap[ym].revenue; });
-
-        const ctxM2 = document.getElementById('monthlyOwnershipRevenueChart').getContext('2d');
-        if (monthlyOwnershipRevenueChartInstance) monthlyOwnershipRevenueChartInstance.destroy();
-        monthlyOwnershipRevenueChartInstance = new Chart(ctxM2, {
-          type: 'bar',
-          data: {
-            labels: labels,
-            datasets: [
-              { label: 'มีเจ้าของ (ฟรี)', data: ownedFreeSeries, backgroundColor: '#10b981', borderRadius: 4 },
-              { label: 'มีเจ้าของ (จ่ายเงิน)', data: ownedPaidSeries, backgroundColor: '#0284c7', borderRadius: 4 },
-              { label: 'จรจัด (ฟรี)', data: strayFreeSeries, backgroundColor: '#34d399', borderRadius: 4 },
-              { label: 'จรจัด (จ่ายเงิน)', data: strayPaidSeries, backgroundColor: '#6366f1', borderRadius: 4 },
-              {
-                label: 'ค่าบริการรวม (บาท)',
-                data: revenueSeries,
-                type: 'line',
-                yAxisID: 'y1',
-                borderColor: '#059669',
-                backgroundColor: '#059669',
-                borderWidth: 2,
-                tension: 0.25,
-                pointRadius: 4
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' } },
-            scales: {
-              y: { beginAtZero: true, position: 'left', ticks: { stepSize: 1 }, title: { display: true, text: 'จำนวนสัตว์ (ตัว)' } },
-              y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false }, title: { display: true, text: 'บาท' } }
-            }
-          }
-        });
-      }
-
-      // Render Comprehensive Monthly Comparison Table
       const tbody = document.getElementById('monthlyComparisonTableBody');
       const tfoot = document.getElementById('monthlyComparisonTableFoot');
       if (!tbody || !tfoot) return;
@@ -2634,7 +2449,7 @@
         tr.className = 'hover:bg-teal-50/50 transition';
         tr.innerHTML =
           '<td class="py-3 px-3 font-bold text-teal-900 whitespace-nowrap border-r border-slate-200">' +
-            '<button type=\"button\" onclick=\"selectMonthFromComparison(\'' + escapeHtml(ym) + '\')\" class=\"hover:underline text-left flex items-center gap-1.5\">' +
+            '<button type="button" onclick="selectMonthFromComparison(\'' + escapeHtml(ym) + '\')" class="hover:underline text-left flex items-center gap-1.5">' +
               '<span>📅 ' + escapeHtml(formatMonthThai(ym)) + '</span>' +
             '</button>' +
           '</td>' +
@@ -2679,17 +2494,34 @@
 
     function renderDashboardTable(filtered) {
       const tbody = document.getElementById('dashboardTableBody');
+      const summaryEl = document.getElementById('tablePaginationSummary');
+      const controlsEl = document.getElementById('tablePaginationControls');
       tbody.innerHTML = '';
 
-      if (filtered.length === 0) {
+      const totalItems = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / tablePageSize));
+      if (tableCurrentPage > totalPages) tableCurrentPage = totalPages;
+      if (tableCurrentPage < 1) tableCurrentPage = 1;
+
+      if (totalItems === 0) {
         tbody.innerHTML =
           '<tr><td colspan="9" class="py-10 text-center text-slate-500">' +
-            'ไม่พบข้อมูลการจองคิวที่ตรงกับคำค้นหาหรือตัวกรองที่เลือก' +
+            'ไม่พบข้อมูลการจองคิวที่ตรงกับเดือนหรือตัวกรองที่เลือก' +
           '</td></tr>';
+        if (summaryEl) summaryEl.textContent = 'แสดง 0 คิว (ไม่มีข้อมูลในเงื่อนไขที่เลือก)';
+        if (controlsEl) controlsEl.innerHTML = '';
         return;
       }
 
-      filtered.forEach(function(item) {
+      const startIdx = (tableCurrentPage - 1) * tablePageSize;
+      const endIdx = Math.min(startIdx + tablePageSize, totalItems);
+      const pagedItems = filtered.slice(startIdx, endIdx);
+
+      if (summaryEl) {
+        summaryEl.textContent = 'แสดงคิวที่ ' + (startIdx + 1) + ' - ' + endIdx + ' จากทั้งหมด ' + totalItems + ' คิว (หน้า ' + tableCurrentPage + '/' + totalPages + ')';
+      }
+
+      pagedItems.forEach(function(item) {
         const b = item.booking;
         const pets = item.matchedPets;
         const firstPet = pets[0] || {};
@@ -2792,6 +2624,45 @@
           '</td>';
         tbody.appendChild(tr);
       });
+
+      // Render Pagination Buttons
+      if (controlsEl) {
+        let btnsHtml = '';
+        const prevDisabled = tableCurrentPage <= 1;
+        const nextDisabled = tableCurrentPage >= totalPages;
+
+        btnsHtml +=
+          '<button type="button" onclick="goToTablePage(' + (tableCurrentPage - 1) + ')" ' + (prevDisabled ? 'disabled ' : '') +
+            'class="px-3 py-1.5 rounded-lg text-xs font-bold border transition ' +
+            (prevDisabled ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+            '‹ ก่อนหน้า' +
+          '</button>';
+
+        for (let p = 1; p <= totalPages; p++) {
+          if (totalPages > 7 && p !== 1 && p !== totalPages && Math.abs(p - tableCurrentPage) > 2) {
+            if (p === 2 || p === totalPages - 1) {
+              btnsHtml += '<span class="px-1.5 text-xs text-slate-400">...</span>';
+            }
+            continue;
+          }
+          const isCurrent = p === tableCurrentPage;
+          btnsHtml +=
+            '<button type="button" onclick="goToTablePage(' + p + ')" ' +
+              'class="w-8 h-8 rounded-lg text-xs font-bold border transition ' +
+              (isCurrent ? 'bg-teal-600 text-white border-teal-600 shadow-sm' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+              p +
+            '</button>';
+        }
+
+        btnsHtml +=
+          '<button type="button" onclick="goToTablePage(' + (tableCurrentPage + 1) + ')" ' + (nextDisabled ? 'disabled ' : '') +
+            'class="px-3 py-1.5 rounded-lg text-xs font-bold border transition ' +
+            (nextDisabled ? 'bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100') + '">' +
+            'ถัดไป ›' +
+          '</button>';
+
+        controlsEl.innerHTML = btnsHtml;
+      }
     }
 
     // ==================== INDIVIDUAL DETAIL MODAL ====================
