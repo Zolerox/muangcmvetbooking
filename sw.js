@@ -1,41 +1,20 @@
-const CACHE_NAME = 'dld-cm-spay-neuter-v2';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
-
-self.addEventListener('install', function(event) {
-  self.skipWaiting();
+const CACHE_NAME = 'dld-cm-spay-neuter-v3';
+self.addEventListener('install', function(e) { self.skipWaiting(); });
+self.addEventListener('activate', function(e) { e.waitUntil(self.clients.claim()); });
+self.addEventListener('notificationclick', function(event) {
+  event.notification.close();
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache) {
-      return cache.addAll(ASSETS).catch(function() {});
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {
+      for (var i = 0; i < clientList.length; i++) {
+        var client = clientList[i];
+        if ('focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('./index.html');
     })
   );
 });
-
-self.addEventListener('activate', function(event) {
-  event.waitUntil(
-    caches.keys().then(function(keys) {
-      return Promise.all(
-        keys.filter(function(k) { return k !== CACHE_NAME; }).map(function(k) { return caches.delete(k); })
-      );
-    }).then(function() {
-      return self.clients.claim();
-    })
-  );
-});
-
-self.addEventListener('fetch', function(event) {
-  if (event.request.method !== 'GET') return;
-  if (event.request.url.indexOf('script.google.com') !== -1 || event.request.url.indexOf('googleusercontent.com') !== -1) {
-    return;
-  }
-  event.respondWith(
-    fetch(event.request).catch(function() {
-      return caches.match(event.request);
-    })
-  );
+self.addEventListener('fetch', function(e) {
+  if (e.request.method !== 'GET') return;
+  if (e.request.url.indexOf('script.google.com') !== -1) return;
+  e.respondWith(fetch(e.request).catch(function() { return caches.match(e.request); }));
 });

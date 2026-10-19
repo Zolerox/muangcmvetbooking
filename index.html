@@ -57,6 +57,9 @@
               <span class="px-2.5 py-0.5 text-xs font-semibold rounded-full bg-teal-400/20 text-teal-100 border border-teal-300/30">
                 กรมปศุสัตว์ • จังหวัดเชียงใหม่
               </span>
+              <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-amber-400 text-slate-950 shadow-sm">
+                v3.2 • แจ้งเตือน + ปฏิทินคิวนัด
+              </span>
               <span id="connectionBadge" class="px-2.5 py-0.5 text-xs font-medium rounded-full bg-emerald-400/20 text-emerald-100 border border-emerald-300/30 flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
                 เวลามาตรฐานกรุงเทพฯ (GMT+7)
@@ -71,7 +74,18 @@
           </div>
         </div>
 
-        <span id="activeUserEmail" class="hidden">vet.mueangcm@dld.go.th</span>
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <button type="button" onclick="openNotificationModal()"
+            class="px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 transition flex items-center gap-1.5 shadow-sm">
+            <span>🔔 แจ้งเตือนมือถือ/คอม</span>
+            <span id="headerNotifStatusBadge" class="px-1.5 py-0.5 text-[10px] rounded-full bg-slate-900 text-amber-300 font-semibold">ตั้งค่า</span>
+          </button>
+          <button type="button" onclick="openInstallModal()"
+            class="px-3 py-2 rounded-xl text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/25 transition flex items-center gap-1.5">
+            <span>📲 ติดตั้งเว็บแอป</span>
+          </button>
+          <span id="activeUserEmail" class="hidden">vet.mueangcm@dld.go.th</span>
+        </div>
       </div>
 
       <!-- Main Navigation Tabs (2 เมนูหลัก) -->
@@ -97,7 +111,34 @@
   </header>
 
   <!-- Main Content Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+
+    <!-- Live Push Notification Banner (In-App + Sound + OS Notification) -->
+    <div id="livePushAlertBanner" class="hidden bg-slate-900 text-white border-2 border-amber-400 rounded-2xl p-4 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-amber-400 text-slate-950 flex items-center justify-center shrink-0 font-bold text-lg">
+          🔔
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-amber-400 text-slate-950">แจ้งเตือนระบบคิวทำหมัน</span>
+            <span id="livePushAlertTime" class="text-xs text-teal-300 font-mono"></span>
+          </div>
+          <h4 id="livePushAlertTitle" class="text-sm sm:text-base font-bold text-white mt-0.5">แจ้งเตือนคิวผ่าตัดทำหมัน</h4>
+          <p id="livePushAlertBody" class="text-xs sm:text-sm text-slate-200 mt-0.5"></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <button type="button" id="livePushAlertActionBtn" onclick="handleLivePushAlertClick()"
+          class="hidden px-3.5 py-2 rounded-xl text-xs font-bold bg-teal-500 text-slate-950 hover:bg-teal-400 transition">
+          ดูรายละเอียดคิว
+        </button>
+        <button type="button" onclick="closeLivePushAlertBanner()"
+          class="px-3 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white transition">
+          รับทราบ ✕
+        </button>
+      </div>
+    </div>
 
     <!-- ==================== VIEW 1: BOOKING FORM ==================== -->
     <section id="viewBooking" class="space-y-6">
@@ -427,6 +468,108 @@
         </div>
       </div>
 
+      <!-- 1.5 CALENDAR SECTION: ตารางปฏิทินคิวนัดผ่าตัดทำหมัน (ต่อจากตารางทะเบียนรายชื่อ) -->
+      <div id="calendarScheduleSection" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 bg-gradient-to-r from-teal-900 via-teal-800 to-slate-900 text-white flex flex-col gap-3.5">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-teal-400/20 border border-teal-300/30 text-teal-100 flex items-center justify-center shrink-0 font-bold text-lg">
+                📅
+              </div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <h3 class="font-bold text-base sm:text-lg text-white">ตารางปฏิทินคิวนัดผ่าตัดทำหมัน</h3>
+                  <span id="calendarMonthSummaryBadge" class="text-xs font-bold px-3 py-0.5 rounded-full bg-amber-400 text-slate-950">
+                    เดือนนี้ 0 คิว (0 ตัว)
+                  </span>
+                </div>
+                <p class="text-xs text-teal-100/90 mt-0.5">
+                  แสดงจำนวนคิวนัดและรายชื่อสัตว์ในแต่ละวัน • คลิกที่ช่องวันที่เพื่อดูรายละเอียดคิวนัดทั้งหมดของวันนั้น หรือกดจองคิวเพิ่มในวันที่เลือก
+                </p>
+              </div>
+            </div>
+
+            <!-- Calendar Month Controls -->
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+              <button type="button" onclick="shiftCalendarMonth(-1)"
+                class="px-3 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition">
+                ‹ เดือนก่อนหน้า
+              </button>
+              <select id="calendarMonthSelect" aria-label="เลือกเดือนปฏิทิน" onchange="handleCalendarMonthSelect(this.value)"
+                class="rounded-xl bg-slate-900/90 border border-teal-400/60 px-3 py-2 text-xs sm:text-sm font-bold text-white focus:outline-none focus:ring-2 focus:ring-teal-400">
+              </select>
+              <button type="button" onclick="shiftCalendarMonth(1)"
+                class="px-3 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition">
+                เดือนถัดไป ›
+              </button>
+              <button type="button" onclick="goToCalendarToday()"
+                class="px-3 py-2 rounded-xl text-xs font-bold bg-teal-400 text-slate-950 hover:bg-teal-300 transition shadow-sm">
+                วันนี้
+              </button>
+            </div>
+          </div>
+
+          <!-- Calendar Status Legend & Filter Bar -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-white/15 text-xs">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-teal-200 font-semibold">สรุปคิวในเดือนที่แสดง:</span>
+              <span id="calStatPendingBadge" class="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-200 border border-amber-300/30 font-semibold">⏳ รอดำเนินการ 0 คิว</span>
+              <span id="calStatDoneBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-400/20 text-emerald-200 border border-emerald-300/30 font-semibold">✓ ผ่าตัดเสร็จสิ้น 0 คิว</span>
+              <span id="calStatCancelBadge" class="px-2.5 py-0.5 rounded-full bg-rose-400/20 text-rose-200 border border-rose-300/30 font-semibold">✕ ยกเลิก 0 คิว</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <label for="calendarStatusFilter" class="text-teal-200 font-semibold">แสดงสถานะในปฏิทิน:</label>
+              <select id="calendarStatusFilter" onchange="renderCalendarSchedule()"
+                class="rounded-lg bg-slate-900 text-white font-semibold px-2.5 py-1 border border-slate-600 text-xs focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <option value="ALL">ทุกสถานะ (รวมรอดำเนินการ & ผ่าตัดเสร็จ)</option>
+                <option value="รอดำเนินการ">เฉพาะ ⏳ รอดำเนินการ</option>
+                <option value="ผ่าตัดเสร็จสิ้น">เฉพาะ ✓ ผ่าตัดเสร็จสิ้น</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7-Day Calendar Table Grid -->
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse table-fixed min-w-[760px]">
+            <thead>
+              <tr class="bg-slate-100 text-slate-700 text-xs font-bold border-b border-slate-200">
+                <th class="py-2.5 px-2 text-center text-rose-700 bg-rose-50/60 border-r border-slate-200">อาทิตย์ (Sun)</th>
+                <th class="py-2.5 px-2 text-center border-r border-slate-200">จันทร์ (Mon)</th>
+                <th class="py-2.5 px-2 text-center border-r border-slate-200">อังคาร (Tue)</th>
+                <th class="py-2.5 px-2 text-center border-r border-slate-200">พุธ (Wed)</th>
+                <th class="py-2.5 px-2 text-center border-r border-slate-200">พฤหัสบดี (Thu)</th>
+                <th class="py-2.5 px-2 text-center border-r border-slate-200">ศุกร์ (Fri)</th>
+                <th class="py-2.5 px-2 text-center text-indigo-700 bg-indigo-50/60">เสาร์ (Sat)</th>
+              </tr>
+            </thead>
+            <tbody id="calendarGridTableBody" class="divide-y divide-slate-200 text-xs align-top"></tbody>
+          </table>
+        </div>
+
+        <!-- Selected Day Appointments Detail Panel -->
+        <div id="calendarSelectedDayPanel" class="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 space-y-3">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="px-2.5 py-1 rounded-lg bg-teal-700 text-white text-xs font-bold">รายการคิวนัดของวันที่เลือก</span>
+              <h4 id="calendarSelectedDateTitle" class="font-bold text-sm sm:text-base text-slate-900">-</h4>
+              <span id="calendarSelectedDateCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-teal-100 text-teal-900">0 คิว</span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button" onclick="sendSelectedDateNotification()"
+                class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-1 shadow-sm">
+                <span>🔔 แจ้งเตือนคิวของวันนี้เข้าเครื่อง</span>
+              </button>
+              <button type="button" onclick="bookNewQueueOnSelectedDate()"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition flex items-center gap-1 shadow-sm">
+                <span>+ จองคิวเพิ่มในวันที่เลือก</span>
+              </button>
+            </div>
+          </div>
+          <div id="calendarSelectedDayList" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        </div>
+      </div>
+
       <!-- 2. MIDDLE SECTION: Dashboard Summary & Filter Bar -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-slate-100">
@@ -702,7 +845,7 @@
               <span class="font-bold text-sm text-slate-800">ไฟล์ที่ 2: Index.html (นำไปวางทับใน Apps Script หรืออัปโหลดเป็น index.html บน GitHub Pages)</span>
               <button type="button" onclick="copyCurrentIndexHtml()"
                 class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-600 transition">
-                คัดลอก Index.html ทั้งไฟล์ในคลิกเดียว
+                คัดลอก Index.html เวอร์ชันล่าสุด (v3.2 มีแจ้งเตือน + ตารางปฏิทิน)
               </button>
             </div>
           </div>
@@ -882,6 +1025,119 @@
     </div>
   </div>
 
+  <!-- ==================== MODAL: WEB APP PUSH NOTIFICATIONS (มือถือ & คอมพิวเตอร์) ==================== -->
+  <div id="notificationModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-slate-200 space-y-5">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 pb-3.5">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xl shrink-0">
+            🔔
+          </div>
+          <div>
+            <span class="px-2.5 py-0.5 text-xs font-bold rounded-full bg-teal-100 text-teal-800">Web Push & Multi-Device Alert</span>
+            <h3 class="text-base sm:text-lg font-bold text-slate-900 mt-0.5">ตั้งค่าการแจ้งเตือนไปยังมือถือและคอมพิวเตอร์ที่ลง Web App</h3>
+          </div>
+        </div>
+        <button type="button" onclick="closeNotificationModal()"
+          class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold">
+          ✕
+        </button>
+      </div>
+
+      <!-- Step 1: OS / Browser Permission Status -->
+      <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <div class="text-xs font-bold uppercase text-slate-500">สถานะการแจ้งเตือนบนอุปกรณ์นี้ (มือถือ / คอมพิวเตอร์)</div>
+            <div id="notifPermissionStatusText" class="text-sm font-bold text-slate-900 mt-0.5">กำลังตรวจสอบสิทธิ์การแจ้งเตือน...</div>
+          </div>
+          <button type="button" id="btnRequestNotifPermission" onclick="requestDeviceNotificationPermission()"
+            class="px-4 py-2.5 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 text-white transition shadow-sm shrink-0">
+            🔔 กดเปิดรับการแจ้งเตือนบนเครื่องนี้
+          </button>
+        </div>
+        <p class="text-xs text-slate-600 leading-relaxed">
+          * เมื่อเปิดอนุญาตแล้ว ระบบจะส่งแจ้งเตือนเด้งขึ้นบนหน้าจอมือถือ (Android Chrome / iOS 16.4+ ที่ติดตั้งลงหน้าจอโฮม) และบนคอมพิวเตอร์ (Windows / Mac) พร้อมเสียงเตือน แม้จะสลับไปเปิดหน้าต่างอื่นอยู่
+        </p>
+      </div>
+
+      <!-- Step 2: Notification Triggers & Auto-Sync Settings -->
+      <div class="rounded-2xl bg-white border border-slate-200 p-4 space-y-3.5">
+        <h4 class="font-bold text-sm text-slate-900">รูปแบบการแจ้งเตือนอัตโนมัติ (บันทึกการตั้งค่าไว้ในเครื่องนี้)</h4>
+
+        <label class="flex items-start gap-3 cursor-pointer p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition">
+          <input type="checkbox" id="chkNotifLiveSync" onchange="saveNotificationPreferences()" checked
+            class="mt-1 w-4 h-4 rounded text-teal-600 focus:ring-teal-500">
+          <div class="text-xs sm:text-sm">
+            <div class="font-bold text-slate-900">1. แจ้งเตือนข้ามเครื่องทันทีเมื่อมีคิวใหม่ หรือเมื่อยืนยันผ่าตัดเสร็จสิ้น (Real-time Sync)</div>
+            <div class="text-xs text-slate-500">เมื่อมีเจ้าหน้าที่หรือผู้ใช้งานบันทึกคิวใหม่ หรือกดยืนยันผ่าตัดเสร็จสิ้นจากมือถือ/คอมเครื่องอื่น ระบบจะซิงค์ข้อมูลจาก Google Sheets และเด้งแจ้งเตือนเข้าเครื่องนี้โดยอัตโนมัติ</div>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 cursor-pointer p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition">
+          <input type="checkbox" id="chkNotifDailySummary" onchange="saveNotificationPreferences()" checked
+            class="mt-1 w-4 h-4 rounded text-teal-600 focus:ring-teal-500">
+          <div class="text-xs sm:text-sm">
+            <div class="font-bold text-slate-900">2. แจ้งเตือนสรุปคิวนัดผ่าตัดประจำวัน (วันนี้ & พรุ่งนี้)</div>
+            <div class="text-xs text-slate-500">แจ้งเตือนจำนวนคิวรอดำเนินการที่มีนัดผ่าตัดในวันนี้และพรุ่งนี้ทันทีเมื่อเปิด Web App ในแต่ละวัน</div>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 cursor-pointer p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition">
+          <input type="checkbox" id="chkNotifUpcomingTime" onchange="saveNotificationPreferences()" checked
+            class="mt-1 w-4 h-4 rounded text-teal-600 focus:ring-teal-500">
+          <div class="text-xs sm:text-sm">
+            <div class="font-bold text-slate-900">3. แจ้งเตือนล่วงหน้าก่อนถึงเวลานัดผ่าตัด (ภายใน 60 นาที)</div>
+            <div class="text-xs text-slate-500">ตรวจสอบเวลาปัจจุบัน (GMT+7) และแจ้งเตือนเมื่อมีคิวรอดำเนินการของวันนี้ที่ใกล้ถึงเวลานัดหมาย</div>
+          </div>
+        </label>
+
+        <label class="flex items-start gap-3 cursor-pointer p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition">
+          <input type="checkbox" id="chkNotifSound" onchange="saveNotificationPreferences()" checked
+            class="mt-1 w-4 h-4 rounded text-teal-600 focus:ring-teal-500">
+          <div class="text-xs sm:text-sm">
+            <div class="font-bold text-slate-900">4. เปิดเสียงแจ้งเตือน (Notification Chime Sound)</div>
+            <div class="text-xs text-slate-500">ส่งเสียงเตือนเมื่อมีการแจ้งเตือนคิวใหม่หรือเมื่อถึงเวลานัดหมาย</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Step 3: Instant Test & Manual Trigger Buttons -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+        <button type="button" onclick="sendTestDeviceNotification()"
+          class="py-2.5 px-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5">
+          <span>🔔 ทดสอบส่งแจ้งเตือนตอนนี้</span>
+        </button>
+        <button type="button" onclick="sendTodaySummaryNotification(true)"
+          class="py-2.5 px-3.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5">
+          <span>📅 แจ้งเตือนสรุปคิวนัดวันนี้</span>
+        </button>
+        <button type="button" onclick="pollBookingsForLiveNotifications(true)"
+          class="py-2.5 px-3.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs transition shadow-sm flex items-center justify-center gap-1.5">
+          <span>🔄 ซิงค์ข้อมูลล่าสุดเดี๋ยวนี้</span>
+        </button>
+      </div>
+
+      <!-- Recent Notification Log -->
+      <div class="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-700">ประวัติการแจ้งเตือนล่าสุดในเครื่องนี้</span>
+          <button type="button" onclick="clearNotificationHistory()" class="text-[11px] font-semibold text-slate-500 hover:text-rose-600">ล้างประวัติ</button>
+        </div>
+        <div id="notificationHistoryList" class="space-y-2 max-h-44 overflow-y-auto text-xs text-slate-600">
+          <div class="text-center py-3 text-slate-400">ยังไม่มีประวัติการแจ้งเตือน</div>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2 border-t border-slate-100">
+        <button type="button" onclick="closeNotificationModal()"
+          class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-200 text-slate-800 hover:bg-slate-300 transition">
+          ปิดหน้าต่าง
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast Notification -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 hidden max-w-md bg-slate-900 text-white px-4 py-3 rounded-2xl shadow-xl border border-teal-500/40 flex items-center gap-3">
     <span class="w-6 h-6 rounded-full bg-teal-500 text-slate-950 font-bold text-xs flex items-center justify-center shrink-0">✓</span>
@@ -1048,6 +1304,16 @@
     let ownershipPriceChartInstance = null;
     let tableCurrentPage = 1;
     let tablePageSize = 10;
+    let calendarCurrentMonth = '';
+    let selectedCalendarDate = '';
+    let knownBookingsSignatureMap = {};
+    let hasInitializedKnownBookings = false;
+    let alertedUpcomingPetsMap = {};
+    let notificationHistory = [];
+    let lastPushAlertBookingId = null;
+    let liveSyncIntervalId = null;
+    let upcomingCheckIntervalId = null;
+    const NOTIF_PREFS_KEY = 'dld_cm_spay_neuter_notif_prefs_v1';
 
     const THAI_MONTH_NAMES = {
       '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
@@ -2132,11 +2398,25 @@
     }
 
     function onSaveBookingSuccess(bookingId) {
+      snapshotKnownBookings(bookingsState);
       updateNavBadge();
       refreshMonthDropdown();
       renderDashboard();
       resetBookingForm(true);
       showToast('บันทึกคิวนัดผ่าตัดสำเร็จ! (รหัส HN48 จะรันเริ่มจาก 001 เมื่อคลิกยืนยันผ่าตัดเสร็จสิ้น)');
+      const savedRec = bookingsState.find(function(b) { return String(b.bookingId) === String(bookingId); }) || bookingsState[0];
+      if (savedRec) {
+        const firstPet = (savedRec.pets && savedRec.pets[0]) ? savedRec.pets[0] : {};
+        selectedCalendarDate = normalizeDateStr(firstPet.appointmentDate) || selectedCalendarDate;
+        if (selectedCalendarDate) calendarCurrentMonth = selectedCalendarDate.substring(0, 7);
+        renderCalendarSchedule();
+        triggerWebAppNotification(
+          '🐾 บันทึกคิวนัดผ่าตัดทำหมันใหม่สำเร็จ',
+          'เจ้าของ: ' + savedRec.ownerName + ' (' + (savedRec.pets ? savedRec.pets.length : 1) + ' ตัว) • วันนัด ' + (normalizeDateStr(firstPet.appointmentDate) || '-') + ' เวลา ' + (normalizeTimeStr(firstPet.appointmentTime) || '-') + ' น.',
+          savedRec.bookingId,
+          false
+        );
+      }
 
       if (redirectAfterSave) {
         switchView('dashboard');
@@ -2414,6 +2694,7 @@
       document.getElementById('tableResultCount').textContent = 'พบทั้งหมด ' + tableFiltered.length + ' คิว (' + tablePetsCount + ' ตัว)';
 
       renderDashboardTable(tableFiltered);
+      renderCalendarSchedule();
       renderCharts(dogMale, dogFemale, catMale, catFemale, ownedFree, ownedPaid, strayFree, strayPaid);
       renderMonthlyComparison();
     }
@@ -3087,6 +3368,861 @@
       }
     }
 
+    // ==================== INTERACTIVE CALENDAR SCHEDULE (ตารางปฏิทินคิวนัดผ่าตัดทำหมัน) ====================
+    function formatFullThaiDate(yyyyMmDd) {
+      if (!yyyyMmDd || !/^\d{4}-\d{2}-\d{2}$/.test(yyyyMmDd)) return yyyyMmDd || '-';
+      const parts = yyyyMmDd.split('-');
+      const yr = Number(parts[0]) + 543;
+      const mo = THAI_MONTH_NAMES[parts[1]] || parts[1];
+      const day = parseInt(parts[2], 10);
+      return 'วันที่ ' + day + ' ' + mo + ' พ.ศ. ' + yr + ' (' + yyyyMmDd + ')';
+    }
+
+    function ensureCalendarMonthInitialized() {
+      const bkk = getBangkokNowParts();
+      if (!calendarCurrentMonth || !/^\d{4}-\d{2}$/.test(calendarCurrentMonth)) {
+        calendarCurrentMonth = bkk.date.substring(0, 7);
+      }
+      if (!selectedCalendarDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedCalendarDate)) {
+        selectedCalendarDate = bkk.date;
+      }
+    }
+
+    function populateCalendarMonthDropdown() {
+      ensureCalendarMonthInitialized();
+      const sel = document.getElementById('calendarMonthSelect');
+      if (!sel) return;
+
+      const bkk = getBangkokNowParts();
+      const monthSet = new Set([bkk.date.substring(0, 7), calendarCurrentMonth]);
+
+      // Add +/- 3 months around current month for easy planning
+      const baseParts = calendarCurrentMonth.split('-');
+      const baseYear = parseInt(baseParts[0], 10);
+      const baseMonth = parseInt(baseParts[1], 10);
+      for (let offset = -3; offset <= 4; offset++) {
+        const d = new Date(baseYear, baseMonth - 1 + offset, 1);
+        const ym = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+        monthSet.add(ym);
+      }
+
+      bookingsState.forEach(function(b) {
+        (b.pets || []).forEach(function(p) {
+          const dStr = normalizeDateStr(p.appointmentDate);
+          if (dStr && dStr.length >= 7) monthSet.add(dStr.substring(0, 7));
+        });
+      });
+
+      const sortedMonths = Array.from(monthSet).sort().reverse();
+      sel.innerHTML = '';
+      sortedMonths.forEach(function(ym) {
+        const opt = document.createElement('option');
+        opt.value = ym;
+        opt.textContent = '📅 ' + formatMonthThai(ym);
+        sel.appendChild(opt);
+      });
+      sel.value = calendarCurrentMonth;
+    }
+
+    function handleCalendarMonthSelect(newYm) {
+      if (!newYm) return;
+      calendarCurrentMonth = newYm;
+      const bkk = getBangkokNowParts();
+      if (selectedCalendarDate.substring(0, 7) !== newYm) {
+        selectedCalendarDate = (bkk.date.substring(0, 7) === newYm) ? bkk.date : (newYm + '-01');
+      }
+      renderCalendarSchedule();
+    }
+
+    function shiftCalendarMonth(deltaMonths) {
+      ensureCalendarMonthInitialized();
+      const parts = calendarCurrentMonth.split('-');
+      const yr = parseInt(parts[0], 10);
+      const mo = parseInt(parts[1], 10);
+      const d = new Date(yr, mo - 1 + deltaMonths, 1);
+      calendarCurrentMonth = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+      const bkk = getBangkokNowParts();
+      selectedCalendarDate = (bkk.date.substring(0, 7) === calendarCurrentMonth)
+        ? bkk.date
+        : (calendarCurrentMonth + '-01');
+      renderCalendarSchedule();
+    }
+
+    function goToCalendarToday() {
+      const bkk = getBangkokNowParts();
+      calendarCurrentMonth = bkk.date.substring(0, 7);
+      selectedCalendarDate = bkk.date;
+      renderCalendarSchedule();
+      showToast('เลื่อนปฏิทินมายังวันนี้ (' + bkk.date + ') แล้ว');
+    }
+
+    function selectCalendarDate(dateStr) {
+      if (!dateStr) return;
+      selectedCalendarDate = dateStr;
+      if (dateStr.substring(0, 7) !== calendarCurrentMonth) {
+        calendarCurrentMonth = dateStr.substring(0, 7);
+      }
+      renderCalendarSchedule();
+    }
+
+    function bookNewQueueOnSelectedDate(dateOverride) {
+      const targetDate = dateOverride || selectedCalendarDate || getBangkokNowParts().date;
+      if (editingBookingId) {
+        cancelEditBooking();
+      }
+      switchView('booking');
+      if (petDraftCards.length === 0) {
+        petDraftCards = [createBlankPetDraft(null)];
+      }
+      petDraftCards.forEach(function(p) {
+        p.appointmentDate = targetDate;
+      });
+      renderPetCards();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      showToast('เลือกวันนัดผ่าตัดวันที่ ' + targetDate + ' ในแบบฟอร์มจองคิวแล้ว');
+    }
+
+    function renderCalendarSchedule() {
+      ensureCalendarMonthInitialized();
+      populateCalendarMonthDropdown();
+
+      const tbody = document.getElementById('calendarGridTableBody');
+      if (!tbody) return;
+
+      const calStatusFilterEl = document.getElementById('calendarStatusFilter');
+      const calStatusFilter = calStatusFilterEl ? calStatusFilterEl.value : 'ALL';
+      const bkk = getBangkokNowParts();
+      const todayStr = bkk.date;
+
+      // Collect bookings by date (YYYY-MM-DD)
+      const dayBuckets = {};
+      let monthQueuesTotal = 0;
+      let monthPetsTotal = 0;
+      let monthPendingQueues = 0;
+      let monthDoneQueues = 0;
+      let monthCancelQueues = 0;
+
+      bookingsState.forEach(function(b) {
+        const petsInBooking = b.pets || [];
+        if (petsInBooking.length === 0) return;
+        const primaryDate = normalizeDateStr(petsInBooking[0].appointmentDate);
+        if (!primaryDate) return;
+        const ym = primaryDate.substring(0, 7);
+
+        if (ym === calendarCurrentMonth) {
+          if (b.status === 'รอดำเนินการ') monthPendingQueues++;
+          else if (b.status === 'ผ่าตัดเสร็จสิ้น') monthDoneQueues++;
+          else if (b.status === 'ยกเลิกคิว') monthCancelQueues++;
+        }
+
+        if (calStatusFilter !== 'ALL' && b.status !== calStatusFilter) return;
+
+        if (ym === calendarCurrentMonth) {
+          monthQueuesTotal++;
+          monthPetsTotal += petsInBooking.length;
+        }
+
+        if (!dayBuckets[primaryDate]) {
+          dayBuckets[primaryDate] = [];
+        }
+        dayBuckets[primaryDate].push(b);
+      });
+
+      // Sort each day's bookings by appointmentTime
+      Object.keys(dayBuckets).forEach(function(dKey) {
+        dayBuckets[dKey].sort(function(a, b) {
+          const tA = (a.pets && a.pets[0] && a.pets[0].appointmentTime) ? normalizeTimeStr(a.pets[0].appointmentTime) : '99:99';
+          const tB = (b.pets && b.pets[0] && b.pets[0].appointmentTime) ? normalizeTimeStr(b.pets[0].appointmentTime) : '99:99';
+          return tA.localeCompare(tB);
+        });
+      });
+
+      const summaryBadge = document.getElementById('calendarMonthSummaryBadge');
+      if (summaryBadge) {
+        summaryBadge.textContent = formatMonthThai(calendarCurrentMonth) + ' • ' + monthQueuesTotal + ' คิว (' + monthPetsTotal + ' ตัว)';
+      }
+      const pBadge = document.getElementById('calStatPendingBadge');
+      const dBadge = document.getElementById('calStatDoneBadge');
+      const cBadge = document.getElementById('calStatCancelBadge');
+      if (pBadge) pBadge.textContent = '⏳ รอดำเนินการ ' + monthPendingQueues + ' คิว';
+      if (dBadge) dBadge.textContent = '✓ ผ่าตัดเสร็จสิ้น ' + monthDoneQueues + ' คิว';
+      if (cBadge) cBadge.textContent = '✕ ยกเลิก ' + monthCancelQueues + ' คิว';
+
+      const parts = calendarCurrentMonth.split('-');
+      const yearNum = parseInt(parts[0], 10);
+      const monthIndex = parseInt(parts[1], 10) - 1;
+      const firstDayOfWeek = new Date(yearNum, monthIndex, 1).getDay(); // 0 (Sun) .. 6 (Sat)
+      const daysInMonth = new Date(yearNum, monthIndex + 1, 0).getDate();
+
+      tbody.innerHTML = '';
+      let currentDay = 1;
+      const totalCells = Math.ceil((firstDayOfWeek + daysInMonth) / 7) * 7;
+      const numRows = totalCells / 7;
+
+      for (let r = 0; r < numRows; r++) {
+        const tr = document.createElement('tr');
+        tr.className = 'divide-x divide-slate-200';
+
+        for (let c = 0; c < 7; c++) {
+          const cellIndex = r * 7 + c;
+          const td = document.createElement('td');
+
+          if (cellIndex < firstDayOfWeek || currentDay > daysInMonth) {
+            td.className = 'h-28 bg-slate-50/70 p-2 text-slate-300';
+            td.innerHTML = '<div class="text-xs">-</div>';
+          } else {
+            const ddStr = ('0' + currentDay).slice(-2);
+            const fullDateStr = calendarCurrentMonth + '-' + ddStr;
+            const dayBookings = dayBuckets[fullDateStr] || [];
+            const isToday = (fullDateStr === todayStr);
+            const isSelected = (fullDateStr === selectedCalendarDate);
+
+            let totalPetsOnDay = 0;
+            let pendingCount = 0;
+            let doneCount = 0;
+            dayBookings.forEach(function(b) {
+              totalPetsOnDay += (b.pets ? b.pets.length : 0);
+              if (b.status === 'รอดำเนินการ') pendingCount++;
+              else if (b.status === 'ผ่าตัดเสร็จสิ้น') doneCount++;
+            });
+
+            let cellBg = 'bg-white hover:bg-teal-50/40';
+            if (isSelected) {
+              cellBg = 'bg-teal-50/90 ring-2 ring-inset ring-teal-600';
+            } else if (isToday) {
+              cellBg = 'bg-amber-50/50';
+            }
+
+            td.className = 'h-32 p-2 cursor-pointer transition align-top ' + cellBg;
+            td.onclick = (function(dStr) {
+              return function() { selectCalendarDate(dStr); };
+            })(fullDateStr);
+
+            let headerBadgeHtml = '';
+            if (dayBookings.length > 0) {
+              headerBadgeHtml =
+                '<span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-900 text-white">' +
+                  dayBookings.length + ' คิว (' + totalPetsOnDay + ' ตัว)' +
+                '</span>';
+            }
+
+            let dayNumBadge = '<span class="inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ' +
+              (isToday ? 'bg-amber-500 text-slate-950 shadow-sm' : (isSelected ? 'bg-teal-700 text-white' : 'text-slate-800')) + '">' +
+              currentDay +
+            '</span>';
+            if (isToday) {
+              dayNumBadge += '<span class="ml-1 text-[10px] font-bold text-amber-800">วันนี้</span>';
+            }
+
+            let statusPillsHtml = '';
+            if (pendingCount > 0 || doneCount > 0) {
+              statusPillsHtml = '<div class="flex flex-wrap gap-1 mt-1">';
+              if (pendingCount > 0) {
+                statusPillsHtml += '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">⏳ รอ ' + pendingCount + '</span>';
+              }
+              if (doneCount > 0) {
+                statusPillsHtml += '<span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300">✓ เสร็จ ' + doneCount + '</span>';
+              }
+              statusPillsHtml += '</div>';
+            }
+
+            const maxPreview = 3;
+            const previewItemsHtml = dayBookings.slice(0, maxPreview).map(function(b) {
+              const firstPet = (b.pets && b.pets[0]) ? b.pets[0] : {};
+              const tStr = normalizeTimeStr(firstPet.appointmentTime) || '';
+              const icon = firstPet.species === 'แมว' ? '🐈' : '🐕';
+              const petNames = (b.pets || []).map(function(p) { return p.petName; }).join(', ');
+              let pillColor = 'bg-amber-50 text-amber-950 border-amber-300 hover:bg-amber-100';
+              if (b.status === 'ผ่าตัดเสร็จสิ้น') {
+                pillColor = 'bg-emerald-50 text-emerald-950 border-emerald-300 hover:bg-emerald-100';
+              } else if (b.status === 'ยกเลิกคิว') {
+                pillColor = 'bg-rose-50 text-rose-900 border-rose-200 line-through';
+              }
+              return (
+                '<div onclick="event.stopPropagation(); openDetailModal(\'' + escapeHtml(b.bookingId) + '\')" ' +
+                  'title="คลิกเพื่อดูรายละเอียด: ' + escapeHtml(b.ownerName) + ' (' + escapeHtml(petNames) + ')" ' +
+                  'class="mt-1 px-1.5 py-0.5 rounded border text-[11px] font-medium truncate transition ' + pillColor + '">' +
+                  (tStr ? '<strong class="font-mono">' + escapeHtml(tStr) + '</strong> ' : '') +
+                  icon + ' ' + escapeHtml(petNames) + ' <span class="opacity-75">(' + escapeHtml(b.ownerName) + ')</span>' +
+                '</div>'
+              );
+            }).join('');
+
+            const moreHtml = dayBookings.length > maxPreview
+              ? '<div class="mt-1 text-[10px] font-bold text-teal-700 text-center">+ ดูเพิ่มอีก ' + (dayBookings.length - maxPreview) + ' คิว...</div>'
+              : '';
+
+            td.innerHTML =
+              '<div class="flex items-center justify-between gap-1">' +
+                '<div>' + dayNumBadge + '</div>' +
+                headerBadgeHtml +
+              '</div>' +
+              statusPillsHtml +
+              '<div class="mt-1">' + previewItemsHtml + moreHtml + '</div>';
+
+            currentDay++;
+          }
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      }
+
+      renderSelectedCalendarDayPanel(dayBuckets[selectedCalendarDate] || []);
+    }
+
+    function renderSelectedCalendarDayPanel(dayBookings) {
+      const titleEl = document.getElementById('calendarSelectedDateTitle');
+      const countBadgeEl = document.getElementById('calendarSelectedDateCountBadge');
+      const listEl = document.getElementById('calendarSelectedDayList');
+      if (!titleEl || !listEl) return;
+
+      titleEl.textContent = formatFullThaiDate(selectedCalendarDate);
+      const totalPets = dayBookings.reduce(function(acc, b) { return acc + (b.pets ? b.pets.length : 0); }, 0);
+      if (countBadgeEl) {
+        countBadgeEl.textContent = dayBookings.length + ' คิว (' + totalPets + ' ตัว)';
+      }
+
+      if (dayBookings.length === 0) {
+        listEl.innerHTML =
+          '<div class="md:col-span-2 rounded-xl border border-dashed border-slate-300 bg-white p-6 text-center text-xs sm:text-sm text-slate-500">' +
+            'ไม่มีรายการนัดผ่าตัดทำหมันในวันที่เลือก (' + escapeHtml(selectedCalendarDate) + ') • สามารถกดปุ่ม <strong>"+ จองคิวเพิ่มในวันที่เลือก"</strong> ด้านบนเพื่อลงคิวใหม่ได้ทันที' +
+          '</div>';
+        return;
+      }
+
+      listEl.innerHTML = dayBookings.map(function(b) {
+        const firstPet = (b.pets && b.pets[0]) ? b.pets[0] : {};
+        const cleanTime = normalizeTimeStr(firstPet.appointmentTime) || '-';
+        const hasHn = (b.status === 'ผ่าตัดเสร็จสิ้น' && isOfficialHnCode(b.bookingId));
+        const codeLabel = hasHn ? b.bookingId : '⏳ รอออกรหัส HN48';
+        let badgeStyle = 'bg-amber-100 text-amber-900 border-amber-300';
+        if (b.status === 'ผ่าตัดเสร็จสิ้น') badgeStyle = 'bg-emerald-100 text-emerald-900 border-emerald-300';
+        if (b.status === 'ยกเลิกคิว') badgeStyle = 'bg-rose-100 text-rose-900 border-rose-300';
+
+        const petsDesc = (b.pets || []).map(function(p) {
+          return (p.species === 'แมว' ? '🐈 ' : '🐕 ') + p.petName + ' (' + p.species + '/' + p.gender + ' • ' + p.ownershipType + ')';
+        }).join(', ');
+
+        return (
+          '<div class="rounded-xl bg-white border border-slate-200 p-3.5 shadow-sm flex flex-col justify-between gap-2.5 hover:border-teal-400 transition">' +
+            '<div class="flex items-start justify-between gap-2">' +
+              '<div>' +
+                '<div class="flex flex-wrap items-center gap-1.5">' +
+                  '<span class="px-2 py-0.5 rounded-md bg-slate-900 text-white font-mono text-xs font-bold">⏰ ' + escapeHtml(cleanTime) + ' น.</span>' +
+                  '<span class="px-2 py-0.5 rounded-md font-mono text-xs font-bold ' + (hasHn ? 'bg-teal-100 text-teal-900' : 'bg-amber-50 text-amber-800 border border-amber-200') + '">' + escapeHtml(codeLabel) + '</span>' +
+                  '<span class="px-2 py-0.5 rounded-full text-[11px] font-bold border ' + badgeStyle + '">' + escapeHtml(b.status) + '</span>' +
+                '</div>' +
+                '<div class="font-bold text-sm text-slate-900 mt-1.5">' + escapeHtml(b.ownerName) + ' <span class="text-xs font-semibold text-teal-700">(' + escapeHtml(b.phone) + ')</span></div>' +
+                '<div class="text-xs text-slate-600 mt-0.5">' + escapeHtml(petsDesc) + '</div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="flex flex-wrap items-center justify-end gap-1.5 pt-2 border-t border-slate-100">' +
+              '<button type="button" onclick="openDetailModal(\'' + escapeHtml(b.bookingId) + '\')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 transition">ดูข้อมูล</button>' +
+              '<button type="button" onclick="copyCustomerToNewBooking(\'' + escapeHtml(b.bookingId) + '\')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition">📋 คัดลอกลูกค้า</button>' +
+              '<button type="button" onclick="startEditBooking(\'' + escapeHtml(b.bookingId) + '\')" class="px-2.5 py-1 rounded-lg text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-600 transition">แก้ไข</button>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    // ==================== WEB PUSH & MULTI-DEVICE NOTIFICATION SYSTEM ====================
+    function getNotificationPreferences() {
+      const defaults = {
+        liveSync: true,
+        dailySummary: true,
+        upcomingTime: true,
+        sound: true
+      };
+      try {
+        const raw = localStorage.getItem(NOTIF_PREFS_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return Object.assign({}, defaults, parsed);
+        }
+      } catch (e) {}
+      return defaults;
+    }
+
+    function loadNotificationPreferencesToUi() {
+      const prefs = getNotificationPreferences();
+      const c1 = document.getElementById('chkNotifLiveSync');
+      const c2 = document.getElementById('chkNotifDailySummary');
+      const c3 = document.getElementById('chkNotifUpcomingTime');
+      const c4 = document.getElementById('chkNotifSound');
+      if (c1) c1.checked = Boolean(prefs.liveSync);
+      if (c2) c2.checked = Boolean(prefs.dailySummary);
+      if (c3) c3.checked = Boolean(prefs.upcomingTime);
+      if (c4) c4.checked = Boolean(prefs.sound);
+      updateNotificationPermissionUi();
+    }
+
+    function saveNotificationPreferences() {
+      const prefs = {
+        liveSync: document.getElementById('chkNotifLiveSync') ? document.getElementById('chkNotifLiveSync').checked : true,
+        dailySummary: document.getElementById('chkNotifDailySummary') ? document.getElementById('chkNotifDailySummary').checked : true,
+        upcomingTime: document.getElementById('chkNotifUpcomingTime') ? document.getElementById('chkNotifUpcomingTime').checked : true,
+        sound: document.getElementById('chkNotifSound') ? document.getElementById('chkNotifSound').checked : true
+      };
+      try {
+        localStorage.setItem(NOTIF_PREFS_KEY, JSON.stringify(prefs));
+      } catch (e) {}
+      showToast('บันทึกการตั้งค่าการแจ้งเตือนเรียบร้อยแล้ว');
+    }
+
+    function updateNotificationPermissionUi() {
+      const statusTextEl = document.getElementById('notifPermissionStatusText');
+      const btnEl = document.getElementById('btnRequestNotifPermission');
+      const headerBadge = document.getElementById('headerNotifStatusBadge');
+
+      if (typeof Notification === 'undefined') {
+        if (statusTextEl) statusTextEl.textContent = 'กำลังใช้ระบบแจ้งเตือนภายในเว็บแอป + เสียงเตือน (เบราว์เซอร์นี้ไม่รองรับ OS Push)';
+        if (btnEl) btnEl.textContent = '✓ เปิดระบบแจ้งเตือนในแอปแล้ว';
+        if (headerBadge) {
+          headerBadge.textContent = 'เปิดในแอป';
+          headerBadge.className = 'px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-700 text-white font-semibold';
+        }
+        return;
+      }
+
+      const perm = Notification.permission;
+      if (perm === 'granted') {
+        if (statusTextEl) {
+          statusTextEl.innerHTML = '<span class="text-emerald-700">✓ อนุญาตแล้ว — พร้อมส่งแจ้งเตือนเด้งบนมือถือและคอมพิวเตอร์เครื่องนี้</span>';
+        }
+        if (btnEl) {
+          btnEl.textContent = '✓ เปิดรับการแจ้งเตือนแล้ว';
+          btnEl.className = 'px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shrink-0';
+        }
+        if (headerBadge) {
+          headerBadge.textContent = 'เปิดแล้ว';
+          headerBadge.className = 'px-1.5 py-0.5 text-[10px] rounded-full bg-emerald-700 text-white font-semibold';
+        }
+      } else if (perm === 'denied') {
+        if (statusTextEl) {
+          statusTextEl.innerHTML = '<span class="text-rose-600">✕ สิทธิ์แจ้งเตือนถูกปิดกั้นในเบราว์เซอร์ (แต่ยังแจ้งเตือนด้วยแถบและเสียงในแอปได้)</span>';
+        }
+        if (headerBadge) {
+          headerBadge.textContent = 'เตือนในแอป';
+        }
+      } else {
+        if (statusTextEl) {
+          statusTextEl.textContent = '⏳ ยังไม่ได้กดอนุญาตแจ้งเตือนระดับระบบปฏิบัติการ (กดปุ่มขวามือเพื่อเปิด)';
+        }
+        if (headerBadge) {
+          headerBadge.textContent = 'คลิกเปิด';
+        }
+      }
+    }
+
+    function requestDeviceNotificationPermission() {
+      playNotificationChime();
+      if (typeof Notification === 'undefined') {
+        updateNotificationPermissionUi();
+        triggerWebAppNotification(
+          '🔔 เปิดระบบแจ้งเตือนในเว็บแอปสำเร็จ',
+          'เครื่องนี้จะแสดงแถบแจ้งเตือนพร้อมเสียงเตือนเมื่อมีคิวใหม่หรือถึงเวลานัดผ่าตัดทำหมัน',
+          null,
+          true
+        );
+        return;
+      }
+
+      try {
+        Notification.requestPermission().then(function(permission) {
+          updateNotificationPermissionUi();
+          if (permission === 'granted') {
+            triggerWebAppNotification(
+              '🔔 เปิดการแจ้งเตือนสำเร็จ! (ปศุสัตว์เมืองเชียงใหม่)',
+              'ระบบพร้อมส่งการแจ้งเตือนคิวนัดผ่าตัดทำหมันไปยังมือถือและคอมพิวเตอร์เครื่องนี้แล้ว',
+              null,
+              true
+            );
+          } else {
+            showToast('เปิดใช้แถบแจ้งเตือนและเสียงเตือนภายในเว็บแอปเรียบร้อยแล้ว');
+          }
+        });
+      } catch (e) {
+        updateNotificationPermissionUi();
+        showToast('เปิดใช้แถบแจ้งเตือนและเสียงเตือนภายในเว็บแอปเรียบร้อยแล้ว');
+      }
+    }
+
+    function playNotificationChime() {
+      const prefs = getNotificationPreferences();
+      if (!prefs.sound) return;
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+
+        // First tone (E5 = 659.25 Hz)
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(659.25, now);
+        gain1.gain.setValueAtTime(0.14, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+        osc1.connect(gain1);
+        gain1.connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.22);
+
+        // Second tone (A5 = 880 Hz)
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(880.0, now + 0.16);
+        gain2.gain.setValueAtTime(0.16, now + 0.16);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start(now + 0.16);
+        osc2.stop(now + 0.48);
+      } catch (e) {}
+    }
+
+    function triggerWebAppNotification(title, body, bookingId, forceOSPopup) {
+      const bkk = getBangkokNowParts();
+      playNotificationChime();
+
+      // 1. Show In-App Live Push Banner
+      const bannerEl = document.getElementById('livePushAlertBanner');
+      const titleEl = document.getElementById('livePushAlertTitle');
+      const bodyEl = document.getElementById('livePushAlertBody');
+      const timeEl = document.getElementById('livePushAlertTime');
+      const actionBtn = document.getElementById('livePushAlertActionBtn');
+
+      lastPushAlertBookingId = bookingId || null;
+      if (bannerEl && titleEl && bodyEl) {
+        titleEl.textContent = title;
+        bodyEl.textContent = body;
+        if (timeEl) timeEl.textContent = 'เวลา ' + bkk.time + ' น.';
+        if (actionBtn) {
+          if (bookingId) actionBtn.classList.remove('hidden');
+          else actionBtn.classList.add('hidden');
+        }
+        bannerEl.classList.remove('hidden');
+      }
+
+      // 2. Add to Notification History
+      notificationHistory.unshift({
+        time: bkk.full,
+        title: title,
+        body: body,
+        bookingId: bookingId || null
+      });
+      if (notificationHistory.length > 15) {
+        notificationHistory = notificationHistory.slice(0, 15);
+      }
+      renderNotificationHistory();
+
+      // 3. Native OS / Mobile PWA Notification (Service Worker or Notification API)
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        const notifOptions = {
+          body: body,
+          icon: './icon-192.png',
+          badge: './icon-192.png',
+          vibrate: [200, 100, 200],
+          tag: bookingId ? ('queue-' + bookingId + '-' + Date.now()) : ('alert-' + Date.now()),
+          data: { bookingId: bookingId || '' }
+        };
+        if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+          navigator.serviceWorker.ready.then(function(reg) {
+            if (reg && reg.showNotification) {
+              reg.showNotification(title, notifOptions);
+            } else {
+              new Notification(title, notifOptions);
+            }
+          }).catch(function() {
+            try { new Notification(title, notifOptions); } catch (e) {}
+          });
+        } else {
+          try { new Notification(title, notifOptions); } catch (e) {}
+        }
+      } else if (forceOSPopup && typeof Notification !== 'undefined' && Notification.permission === 'default') {
+        requestDeviceNotificationPermission();
+      }
+    }
+
+    function handleLivePushAlertClick() {
+      const targetId = lastPushAlertBookingId;
+      closeLivePushAlertBanner();
+      if (targetId) {
+        switchView('dashboard');
+        openDetailModal(targetId);
+      }
+    }
+
+    function closeLivePushAlertBanner() {
+      const bannerEl = document.getElementById('livePushAlertBanner');
+      if (bannerEl) bannerEl.classList.add('hidden');
+    }
+
+    function openNotificationModal() {
+      loadNotificationPreferencesToUi();
+      renderNotificationHistory();
+      document.getElementById('notificationModal').classList.remove('hidden');
+    }
+
+    function closeNotificationModal() {
+      document.getElementById('notificationModal').classList.add('hidden');
+    }
+
+    function renderNotificationHistory() {
+      const listEl = document.getElementById('notificationHistoryList');
+      if (!listEl) return;
+      if (notificationHistory.length === 0) {
+        listEl.innerHTML = '<div class="text-center py-3 text-slate-400">ยังไม่มีประวัติการแจ้งเตือน</div>';
+        return;
+      }
+      listEl.innerHTML = notificationHistory.map(function(item) {
+        const viewBtn = item.bookingId
+          ? '<button type="button" onclick="closeNotificationModal(); switchView(\'dashboard\'); openDetailModal(\'' + escapeHtml(item.bookingId) + '\')" class="text-teal-700 font-bold hover:underline shrink-0">ดูคิว ↗</button>'
+          : '';
+        return (
+          '<div class="rounded-xl bg-white border border-slate-200 p-2.5 flex items-start justify-between gap-2">' +
+            '<div>' +
+              '<div class="font-bold text-slate-900">' + escapeHtml(item.title) + ' <span class="text-[10px] font-mono text-slate-400">' + escapeHtml(item.time) + '</span></div>' +
+              '<div class="text-slate-600 mt-0.5">' + escapeHtml(item.body) + '</div>' +
+            '</div>' +
+            viewBtn +
+          '</div>'
+        );
+      }).join('');
+    }
+
+    function clearNotificationHistory() {
+      notificationHistory = [];
+      renderNotificationHistory();
+      showToast('ล้างประวัติการแจ้งเตือนแล้ว');
+    }
+
+    function sendTestDeviceNotification() {
+      triggerWebAppNotification(
+        '🔔 ทดสอบการแจ้งเตือนสำเร็จ! (ปศุสัตว์เมืองเชียงใหม่)',
+        'ระบบการแจ้งเตือนไปยังมือถือและคอมพิวเตอร์ที่ติดตั้ง Web App พร้อมใช้งานแล้ว',
+        bookingsState[0] ? bookingsState[0].bookingId : null,
+        true
+      );
+      showToast('ส่งการแจ้งเตือนทดสอบไปยังอุปกรณ์แล้ว');
+    }
+
+    function sendTodaySummaryNotification(manualTrigger) {
+      const bkk = getBangkokNowParts();
+      const todayStr = bkk.date;
+      let pendingToday = 0;
+      let pendingPetsToday = 0;
+      let doneToday = 0;
+      let firstBookingId = null;
+
+      bookingsState.forEach(function(b) {
+        const pets = b.pets || [];
+        const hasToday = pets.some(function(p) { return normalizeDateStr(p.appointmentDate) === todayStr; });
+        if (!hasToday) return;
+        if (!firstBookingId) firstBookingId = b.bookingId;
+        if (b.status === 'รอดำเนินการ') {
+          pendingToday++;
+          pendingPetsToday += pets.length;
+        } else if (b.status === 'ผ่าตัดเสร็จสิ้น') {
+          doneToday++;
+        }
+      });
+
+      if (pendingToday === 0 && doneToday === 0 && !manualTrigger) return;
+
+      const title = '📅 สรุปคิวผ่าตัดทำหมันวันนี้ (' + todayStr + ')';
+      const body = pendingToday > 0
+        ? 'วันนี้มีคิวรอดำเนินการ ' + pendingToday + ' คิว (' + pendingPetsToday + ' ตัว) • ผ่าตัดเสร็จแล้ว ' + doneToday + ' คิว'
+        : 'วันนี้ยังไม่มีคิวรอดำเนินการค้างอยู่ (ผ่าตัดเสร็จสิ้นแล้ว ' + doneToday + ' คิว)';
+
+      triggerWebAppNotification(title, body, firstBookingId, Boolean(manualTrigger));
+    }
+
+    function sendSelectedDateNotification() {
+      const targetDate = selectedCalendarDate || getBangkokNowParts().date;
+      let pendingCount = 0;
+      let petsCount = 0;
+      let firstId = null;
+
+      bookingsState.forEach(function(b) {
+        const pets = b.pets || [];
+        const match = pets.some(function(p) { return normalizeDateStr(p.appointmentDate) === targetDate; });
+        if (match && b.status !== 'ยกเลิกคิว') {
+          if (!firstId) firstId = b.bookingId;
+          petsCount += pets.length;
+          if (b.status === 'รอดำเนินการ') pendingCount++;
+        }
+      });
+
+      triggerWebAppNotification(
+        '📅 แจ้งเตือนคิวนัดวันที่ ' + targetDate,
+        'มีคิวนัดรวมในวันดังกล่าว ' + petsCount + ' ตัว (รอดำเนินการ ' + pendingCount + ' คิว)',
+        firstId,
+        true
+      );
+    }
+
+    function snapshotKnownBookings(list) {
+      const map = {};
+      (list || []).forEach(function(b) {
+        const sigKey = String(b.ownerName || '') + '|' + String(b.phone || '') + '|' + String((b.pets && b.pets[0] && b.pets[0].petName) || '');
+        map[sigKey] = {
+          bookingId: b.bookingId,
+          status: b.status,
+          ownerName: b.ownerName,
+          petCount: b.pets ? b.pets.length : 0,
+          firstDate: (b.pets && b.pets[0]) ? normalizeDateStr(b.pets[0].appointmentDate) : '',
+          firstTime: (b.pets && b.pets[0]) ? normalizeTimeStr(b.pets[0].appointmentTime) : ''
+        };
+      });
+      knownBookingsSignatureMap = map;
+      hasInitializedKnownBookings = true;
+    }
+
+    function detectAndNotifyChangesFromSync(newList) {
+      if (!hasInitializedKnownBookings) {
+        snapshotKnownBookings(newList);
+        return;
+      }
+      const prefs = getNotificationPreferences();
+      if (!prefs.liveSync) {
+        snapshotKnownBookings(newList);
+        return;
+      }
+
+      (newList || []).forEach(function(b) {
+        const sigKey = String(b.ownerName || '') + '|' + String(b.phone || '') + '|' + String((b.pets && b.pets[0] && b.pets[0].petName) || '');
+        const prev = knownBookingsSignatureMap[sigKey];
+        const firstDate = (b.pets && b.pets[0]) ? normalizeDateStr(b.pets[0].appointmentDate) : '-';
+        const firstTime = (b.pets && b.pets[0]) ? normalizeTimeStr(b.pets[0].appointmentTime) : '-';
+
+        if (!prev) {
+          triggerWebAppNotification(
+            '🆕 มีคิวนัดทำหมันใหม่เข้ามาในระบบ!',
+            'เจ้าของ: ' + b.ownerName + ' (' + (b.pets ? b.pets.length : 1) + ' ตัว) • วันนัด ' + firstDate + ' เวลา ' + firstTime + ' น.',
+            b.bookingId,
+            false
+          );
+        } else if (prev.status !== b.status) {
+          if (b.status === 'ผ่าตัดเสร็จสิ้น') {
+            triggerWebAppNotification(
+              '✓ ยืนยันผ่าตัดเสร็จสิ้น (' + b.bookingId + ')',
+              'เคสของคุณ ' + b.ownerName + ' ผ่าตัดเสร็จสิ้นและออกรหัสคิว ' + b.bookingId + ' แล้ว',
+              b.bookingId,
+              false
+            );
+          } else {
+            triggerWebAppNotification(
+              '🔄 อัปเดตสถานะคิวเป็น "' + b.status + '"',
+              'คิวของคุณ ' + b.ownerName + ' เปลี่ยนสถานะเป็น ' + b.status,
+              b.bookingId,
+              false
+            );
+          }
+        }
+      });
+
+      snapshotKnownBookings(newList);
+    }
+
+    function pollBookingsForLiveNotifications(isManual) {
+      if (isSubmittingBooking || editingBookingId) return;
+
+      if (isGasEnvironment()) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res && Array.isArray(res.bookings)) {
+              const incoming = normalizeBookingsList(res.bookings);
+              detectAndNotifyChangesFromSync(incoming);
+              bookingsState = incoming;
+              updateNavBadge();
+              refreshMonthDropdown();
+              renderDashboard();
+              if (isManual) showToast('ซิงค์ข้อมูลล่าสุดจาก Google Sheets เรียบร้อยแล้ว');
+            }
+          })
+          .getInitialData();
+        return;
+      }
+
+      const apiUrl = getConfiguredGasUrl();
+      if (apiUrl) {
+        callGasRestApi({ action: 'getInitialData' }, function(res) {
+          if (res && res.success && res.data && Array.isArray(res.data.bookings)) {
+            const incoming = normalizeBookingsList(res.data.bookings);
+            detectAndNotifyChangesFromSync(incoming);
+            bookingsState = incoming;
+            saveLocalBookings();
+            updateNavBadge();
+            refreshMonthDropdown();
+            renderDashboard();
+            if (isManual) showToast('ซิงค์ข้อมูลล่าสุดจาก Google Sheets เรียบร้อยแล้ว');
+          }
+        });
+      } else if (isManual) {
+        showToast('ข้อมูลในเครื่องเป็นปัจจุบันแล้ว');
+      }
+    }
+
+    function checkUpcomingAppointmentsAlert() {
+      const prefs = getNotificationPreferences();
+      if (!prefs.upcomingTime) return;
+
+      const bkk = getBangkokNowParts();
+      const todayStr = bkk.date;
+      const nowParts = bkk.time.split(':');
+      const nowMinutes = parseInt(nowParts[0], 10) * 60 + parseInt(nowParts[1], 10);
+
+      bookingsState.forEach(function(b) {
+        if (b.status !== 'รอดำเนินการ') return;
+        (b.pets || []).forEach(function(p) {
+          const apptDate = normalizeDateStr(p.appointmentDate);
+          const apptTime = normalizeTimeStr(p.appointmentTime);
+          if (apptDate !== todayStr || !apptTime) return;
+
+          const tParts = apptTime.split(':');
+          if (tParts.length < 2) return;
+          const apptMinutes = parseInt(tParts[0], 10) * 60 + parseInt(tParts[1], 10);
+          const diff = apptMinutes - nowMinutes;
+
+          const alertKey = b.bookingId + '|' + p.petName + '|' + apptDate + '|' + apptTime;
+          if (diff >= 0 && diff <= 60 && !alertedUpcomingPetsMap[alertKey]) {
+            alertedUpcomingPetsMap[alertKey] = true;
+            triggerWebAppNotification(
+              '⏰ ใกล้ถึงเวลานัดผ่าตัดทำหมัน (เวลา ' + apptTime + ' น.)',
+              'น้อง' + p.petName + ' (' + p.species + ') ของคุณ ' + b.ownerName + ' โทร ' + b.phone,
+              b.bookingId,
+              false
+            );
+          }
+        });
+      });
+    }
+
+    function initNotificationServices() {
+      updateNotificationPermissionUi();
+      snapshotKnownBookings(bookingsState);
+
+      const prefs = getNotificationPreferences();
+      if (prefs.dailySummary) {
+        setTimeout(function() {
+          sendTodaySummaryNotification(false);
+        }, 1200);
+      }
+
+      if (liveSyncIntervalId) clearInterval(liveSyncIntervalId);
+      liveSyncIntervalId = setInterval(function() {
+        pollBookingsForLiveNotifications(false);
+      }, 25000);
+
+      if (upcomingCheckIntervalId) clearInterval(upcomingCheckIntervalId);
+      upcomingCheckIntervalId = setInterval(function() {
+        checkUpcomingAppointmentsAlert();
+      }, 60000);
+    }
+
     // ==================== EXPORT CSV & GITHUB PAGES PWA HELPERS ====================
     function exportFilteredCsv() {
       const filtered = getFilteredBookings(true);
@@ -3221,9 +4357,21 @@
 
     function downloadPwaSwFile() {
       const swCode = [
-        "const CACHE_NAME = 'dld-cm-spay-neuter-v2';",
+        "const CACHE_NAME = 'dld-cm-spay-neuter-v3';",
         "self.addEventListener('install', function(e) { self.skipWaiting(); });",
         "self.addEventListener('activate', function(e) { e.waitUntil(self.clients.claim()); });",
+        "self.addEventListener('notificationclick', function(event) {",
+        "  event.notification.close();",
+        "  event.waitUntil(",
+        "    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(clientList) {",
+        "      for (var i = 0; i < clientList.length; i++) {",
+        "        var client = clientList[i];",
+        "        if ('focus' in client) return client.focus();",
+        "      }",
+        "      if (clients.openWindow) return clients.openWindow('./index.html');",
+        "    })",
+        "  );",
+        "});",
         "self.addEventListener('fetch', function(e) {",
         "  if (e.request.method !== 'GET') return;",
         "  if (e.request.url.indexOf('script.google.com') !== -1) return;",
@@ -3310,7 +4458,9 @@
     // ==================== INITIALIZE ON LOAD ====================
     window.onload = function() {
       if ('serviceWorker' in navigator && window.location.protocol.indexOf('http') === 0 && window.location.hostname.indexOf('script.google.com') === -1 && window.location.hostname.indexOf('googleusercontent.com') === -1) {
-        navigator.serviceWorker.register('./sw.js').catch(function() {});
+        navigator.serviceWorker.register('./sw.js?v=3.2').then(function(reg) {
+          if (reg && reg.update) reg.update();
+        }).catch(function() {});
       }
 
       document.getElementById('codeGsTextarea').value = "/**\n * \u0e23\u0e30\u0e1a\u0e1a\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e17\u0e33\u0e2b\u0e21\u0e31\u0e19\u0e2a\u0e31\u0e15\u0e27\u0e4c - \u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e1b\u0e28\u0e38\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e2d\u0e33\u0e40\u0e20\u0e2d\u0e40\u0e21\u0e37\u0e2d\u0e07\u0e40\u0e0a\u0e35\u0e22\u0e07\u0e43\u0e2b\u0e21\u0e48\n * \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e01\u0e32\u0e23\u0e23\u0e31\u0e19\u0e1a\u0e19 Google Apps Script \u0e42\u0e14\u0e22\u0e15\u0e23\u0e07 \u0e41\u0e25\u0e30\u0e01\u0e32\u0e23\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48\u0e2d\u0e1c\u0e48\u0e32\u0e19 GitHub Pages (PWA REST API)\n * \u0e40\u0e02\u0e15\u0e40\u0e27\u0e25\u0e32: Asia/Bangkok (GMT+7)\n * \u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27 (\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e40\u0e04\u0e2a\u0e17\u0e35\u0e48\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\u0e41\u0e25\u0e49\u0e27): HN48 + \u0e1b\u0e35 \u0e04.\u0e28.(2 \u0e2b\u0e25\u0e31\u0e01\u0e17\u0e49\u0e32\u0e22) + \u0e40\u0e14\u0e37\u0e2d\u0e19(2 \u0e2b\u0e25\u0e31\u0e01) + \u0e27\u0e31\u0e19\u0e19\u0e31\u0e14(2 \u0e2b\u0e25\u0e31\u0e01) + \u0e25\u0e33\u0e14\u0e31\u0e1a(3 \u0e2b\u0e25\u0e31\u0e01 \u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01 001)\n */\n\nconst CONFIG = {\n  APP_TITLE: '\u0e23\u0e30\u0e1a\u0e1a\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e17\u0e33\u0e2b\u0e21\u0e31\u0e19 - \u0e2a\u0e33\u0e19\u0e31\u0e01\u0e07\u0e32\u0e19\u0e1b\u0e28\u0e38\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e2d\u0e33\u0e40\u0e20\u0e2d\u0e40\u0e21\u0e37\u0e2d\u0e07\u0e40\u0e0a\u0e35\u0e22\u0e07\u0e43\u0e2b\u0e21\u0e48',\n  SPREADSHEET_ID: '1J9Lzra8Vaq_c-8hotM1KEgLxV9P9h9Ql47ycQiGo14U',\n  SHEET_PETS: '\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27_\u0e23\u0e32\u0e22\u0e15\u0e31\u0e27',\n  SHEET_OWNERS: '\u0e2a\u0e23\u0e38\u0e1b\u0e23\u0e32\u0e22\u0e0a\u0e37\u0e48\u0e2d\u0e1c\u0e39\u0e49\u0e08\u0e2d\u0e07',\n  TIMEZONE: 'Asia/Bangkok'\n};\n\nconst DEMO_OWNER_NAMES = [\n  '\u0e19\u0e32\u0e22\u0e01\u0e34\u0e15\u0e15\u0e34\u0e1e\u0e07\u0e29\u0e4c \u0e19\u0e31\u0e19\u0e17\u0e02\u0e27\u0e49\u0e32\u0e07',\n  '\u0e19\u0e32\u0e07\u0e04\u0e33\u0e1b\u0e31\u0e19 \u0e2a\u0e38\u0e02\u0e40\u0e01\u0e29\u0e21',\n  '\u0e19\u0e32\u0e22\u0e2d\u0e19\u0e31\u0e19\u0e15\u0e4c \u0e27\u0e07\u0e28\u0e4c\u0e2a\u0e27\u0e31\u0e2a\u0e14\u0e34\u0e4c (\u0e15\u0e31\u0e27\u0e41\u0e17\u0e19\u0e0a\u0e38\u0e21\u0e0a\u0e19\u0e27\u0e31\u0e14\u0e40\u0e01\u0e15)',\n  '\u0e19\u0e32\u0e07\u0e2a\u0e32\u0e27\u0e1e\u0e34\u0e21\u0e1e\u0e4c\u0e0a\u0e19\u0e01 \u0e40\u0e08\u0e23\u0e34\u0e0d\u0e23\u0e32\u0e29\u0e0e\u0e23\u0e4c'\n];\n\nfunction getTargetSpreadsheet() {\n  try {\n    const active = SpreadsheetApp.getActiveSpreadsheet();\n    if (active) return active;\n  } catch (e) {}\n  return SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);\n}\n\n/**\n * \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e17\u0e31\u0e49\u0e07\u0e01\u0e32\u0e23\u0e40\u0e1b\u0e34\u0e14\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e27\u0e47\u0e1a\u0e1b\u0e01\u0e15\u0e34 \u0e41\u0e25\u0e30 JSON API (?action=getInitialData) \u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a GitHub Pages\n */\nfunction doGet(e) {\n  initDatabase();\n\n  if (e && e.parameter && e.parameter.action) {\n    try {\n      const action = String(e.parameter.action || '');\n      let result = { success: false, message: 'Unknown action' };\n      if (action === 'getInitialData') {\n        result = { success: true, data: getInitialData() };\n      } else if (action === 'deleteBookingRecord') {\n        result = deleteBookingRecord(e.parameter.bookingId, e.parameter.ownerName, e.parameter.phone);\n      } else if (action === 'updateBookingStatus') {\n        result = updateBookingStatus(e.parameter.bookingId, e.parameter.newStatus);\n      } else if (action === 'saveBookingRecord' && e.parameter.payload) {\n        result = saveBookingRecord(JSON.parse(e.parameter.payload));\n      } else if (action === 'updateBookingRecord' && e.parameter.payload) {\n        result = updateBookingRecord(JSON.parse(e.parameter.payload));\n      }\n      return ContentService.createTextOutput(JSON.stringify(result))\n        .setMimeType(ContentService.MimeType.JSON);\n    } catch (err) {\n      return ContentService.createTextOutput(JSON.stringify({\n        success: false,\n        error: String(err && err.message ? err.message : err)\n      })).setMimeType(ContentService.MimeType.JSON);\n    }\n  }\n\n  const template = HtmlService.createTemplateFromFile('Index');\n  return template.evaluate()\n    .setTitle(CONFIG.APP_TITLE)\n    .addMetaTag('viewport', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no')\n    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);\n}\n\n/**\n * \u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e04\u0e33\u0e2a\u0e31\u0e48\u0e07\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01/\u0e41\u0e01\u0e49\u0e44\u0e02/\u0e25\u0e1a/\u0e40\u0e1b\u0e25\u0e35\u0e48\u0e22\u0e19\u0e2a\u0e16\u0e32\u0e19\u0e30 \u0e08\u0e32\u0e01\u0e41\u0e2d\u0e1b\u0e1a\u0e19 GitHub Pages \u0e1c\u0e48\u0e32\u0e19 fetch POST\n */\nfunction doPost(e) {\n  try {\n    initDatabase();\n    const bodyStr = (e && e.postData && e.postData.contents) ? e.postData.contents : '{}';\n    const req = JSON.parse(bodyStr);\n    const action = String(req.action || '');\n    let result = { success: false, message: 'Unknown action' };\n\n    if (action === 'getInitialData') {\n      result = { success: true, data: getInitialData() };\n    } else if (action === 'saveBookingRecord') {\n      result = saveBookingRecord(req.payload || {});\n    } else if (action === 'updateBookingRecord') {\n      result = updateBookingRecord(req.payload || {});\n    } else if (action === 'deleteBookingRecord') {\n      result = deleteBookingRecord(req.bookingId, req.ownerName, req.phone);\n    } else if (action === 'updateBookingStatus') {\n      result = updateBookingStatus(req.bookingId, req.newStatus, req.petStatuses);\n    }\n\n    return ContentService.createTextOutput(JSON.stringify(result))\n      .setMimeType(ContentService.MimeType.JSON);\n  } catch (err) {\n    return ContentService.createTextOutput(JSON.stringify({\n      success: false,\n      error: String(err && err.message ? err.message : err)\n    })).setMimeType(ContentService.MimeType.JSON);\n  }\n}\n\n/**\n * \u0e2a\u0e23\u0e49\u0e32\u0e07\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27 HN48 + YY + MM + DD + \u0e25\u0e33\u0e14\u0e31\u0e1a 3 \u0e2b\u0e25\u0e31\u0e01 (\u0e40\u0e23\u0e34\u0e48\u0e21\u0e19\u0e31\u0e1a\u0e08\u0e32\u0e01 001 \u0e40\u0e09\u0e1e\u0e32\u0e30\u0e40\u0e04\u0e2a\u0e17\u0e35\u0e48\u0e21\u0e35\u0e23\u0e2b\u0e31\u0e2a HN48 \u0e41\u0e25\u0e30\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\u0e41\u0e25\u0e49\u0e27\u0e40\u0e17\u0e48\u0e32\u0e19\u0e31\u0e49\u0e19)\n */\nfunction generateHN48QueueId(appointmentDateStr, ownerSheet) {\n  const tz = CONFIG.TIMEZONE;\n  const now = new Date();\n  let yy = Utilities.formatDate(now, tz, 'yy');\n  let mm = Utilities.formatDate(now, tz, 'MM');\n  let dd = Utilities.formatDate(now, tz, 'dd');\n\n  const cleanDate = formatDateOnly(appointmentDateStr);\n  if (cleanDate && /^\\d{4}-\\d{2}-\\d{2}$/.test(cleanDate)) {\n    yy = cleanDate.substring(2, 4);\n    mm = cleanDate.substring(5, 7);\n    dd = cleanDate.substring(8, 10);\n  }\n\n  const datePrefix = 'HN48' + yy + mm + dd;\n  let maxSeqForDate = 0;\n  if (ownerSheet && ownerSheet.getLastRow() > 1) {\n    const rows = ownerSheet.getRange(2, 1, ownerSheet.getLastRow() - 1, 13).getValues();\n    for (let i = 0; i < rows.length; i++) {\n      const idStr = String(rows[i][0] || '').trim();\n      const statusStr = String(rows[i][12] || '').trim();\n      // \u0e19\u0e31\u0e1a\u0e40\u0e09\u0e1e\u0e32\u0e30\u0e40\u0e04\u0e2a\u0e17\u0e35\u0e48\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e40\u0e1b\u0e47\u0e19 \"\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\" \u0e41\u0e25\u0e30\u0e21\u0e35\u0e23\u0e2b\u0e31\u0e2a\u0e02\u0e36\u0e49\u0e19\u0e15\u0e49\u0e19\u0e14\u0e49\u0e27\u0e22 HN48YYMMDD \u0e02\u0e2d\u0e07\u0e27\u0e31\u0e19\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e19\u0e31\u0e49\u0e19\u0e46 \u0e40\u0e17\u0e48\u0e32\u0e19\u0e31\u0e49\u0e19 (\u0e40\u0e23\u0e34\u0e48\u0e21 001 \u0e43\u0e2b\u0e21\u0e48\u0e17\u0e38\u0e01\u0e27\u0e31\u0e19 \u0e2b\u0e49\u0e32\u0e21\u0e40\u0e2d\u0e32\u0e27\u0e31\u0e19\u0e2d\u0e37\u0e48\u0e19\u0e21\u0e32\u0e15\u0e48\u0e2d)\n      if (statusStr === '\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19' && idStr.indexOf(datePrefix) === 0 && /^HN48\\d{9}$/.test(idStr)) {\n        const num = parseInt(idStr.slice(-3), 10);\n        if (!isNaN(num) && num > maxSeqForDate) {\n          maxSeqForDate = num;\n        }\n      }\n    }\n  }\n\n  const nextSeq = maxSeqForDate + 1;\n  return datePrefix + ('000' + nextSeq).slice(-3);\n}\n\n/**\n * \u0e2a\u0e23\u0e49\u0e32\u0e07\u0e15\u0e32\u0e23\u0e32\u0e07\u0e2d\u0e31\u0e15\u0e42\u0e19\u0e21\u0e31\u0e15\u0e34 \u0e25\u0e49\u0e32\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e15\u0e31\u0e27\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e40\u0e14\u0e34\u0e21 \u0e41\u0e25\u0e30\u0e0b\u0e48\u0e2d\u0e21\u0e41\u0e0b\u0e21\u0e23\u0e39\u0e1b\u0e41\u0e1a\u0e1a\u0e40\u0e27\u0e25\u0e32/\u0e25\u0e33\u0e14\u0e31\u0e1a\u0e23\u0e2b\u0e31\u0e2a HN48 \u0e43\u0e2b\u0e49\u0e40\u0e23\u0e34\u0e48\u0e21\u0e19\u0e31\u0e1a\u0e08\u0e32\u0e01 001 \u0e2d\u0e22\u0e48\u0e32\u0e07\u0e16\u0e39\u0e01\u0e15\u0e49\u0e2d\u0e07\n */\nfunction initDatabase() {\n  const ss = getTargetSpreadsheet();\n\n  let petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n  if (!petSheet) {\n    petSheet = ss.insertSheet(CONFIG.SHEET_PETS);\n    const petHeaders = [\n      '\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27 (Booking_ID)',           // 0\n      '\u0e23\u0e2b\u0e31\u0e2a\u0e2a\u0e31\u0e15\u0e27\u0e4c (Pet_ID)',             // 1\n      '\u0e27\u0e31\u0e19\u0e40\u0e27\u0e25\u0e32\u0e17\u0e35\u0e48\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 (Created_At)',   // 2\n      '\u0e1c\u0e39\u0e49\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 (Staff_Email)',         // 3\n      '\u0e0a\u0e37\u0e48\u0e2d-\u0e2a\u0e01\u0e38\u0e25 \u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c',          // 4\n      '\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c',             // 5\n      '\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c',                  // 6\n      '\u0e40\u0e25\u0e02\u0e1a\u0e31\u0e15\u0e23\u0e1b\u0e23\u0e30\u0e0a\u0e32\u0e0a\u0e19',                // 7\n      '\u0e0a\u0e37\u0e48\u0e2d\u0e2a\u0e31\u0e15\u0e27\u0e4c',                      // 8\n      '\u0e1b\u0e23\u0e30\u0e40\u0e20\u0e17 (\u0e21\u0e35\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07/\u0e08\u0e23\u0e08\u0e31\u0e14)',       // 9\n      '\u0e0a\u0e19\u0e34\u0e14 (\u0e2a\u0e38\u0e19\u0e31\u0e02/\u0e41\u0e21\u0e27)',               // 10\n      '\u0e40\u0e1e\u0e28 (\u0e1c\u0e39\u0e49/\u0e40\u0e21\u0e35\u0e22)',                 // 11\n      '\u0e2d\u0e32\u0e22\u0e38 (\u0e1b\u0e35)',                      // 12\n      '\u0e2d\u0e32\u0e22\u0e38 (\u0e40\u0e14\u0e37\u0e2d\u0e19)',                   // 13\n      '\u0e2d\u0e32\u0e22\u0e38\u0e23\u0e27\u0e21',                        // 14\n      '\u0e1e\u0e31\u0e19\u0e18\u0e38\u0e4c',                         // 15\n      '\u0e15\u0e33\u0e2b\u0e19\u0e34/\u0e2a\u0e35',                       // 16\n      '\u0e27\u0e31\u0e19\u0e17\u0e35\u0e48\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27 (YYYY-MM-DD)',       // 17\n      '\u0e40\u0e27\u0e25\u0e32\u0e17\u0e35\u0e48\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27',                  // 18\n      '\u0e40\u0e14\u0e37\u0e2d\u0e19\u0e17\u0e35\u0e48\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27 (YYYY-MM)',        // 19\n      '\u0e1b\u0e23\u0e30\u0e40\u0e20\u0e17\u0e23\u0e32\u0e04\u0e32 (\u0e1f\u0e23\u0e35/\u0e0a\u0e33\u0e23\u0e30\u0e40\u0e07\u0e34\u0e19)',      // 20\n      '\u0e23\u0e32\u0e04\u0e32 (\u0e1a\u0e32\u0e17)',                     // 21\n      '\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e04\u0e34\u0e27'                        // 22\n    ];\n    petSheet.appendRow(petHeaders);\n    petSheet.getRange(1, 1, 1, petHeaders.length)\n      .setBackground('#0f766e')\n      .setFontColor('#ffffff')\n      .setFontWeight('bold');\n    petSheet.setFrozenRows(1);\n  }\n\n  let ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n  if (!ownerSheet) {\n    ownerSheet = ss.insertSheet(CONFIG.SHEET_OWNERS);\n    const ownerHeaders = [\n      '\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27 (Booking_ID)',\n      '\u0e27\u0e31\u0e19\u0e40\u0e27\u0e25\u0e32\u0e17\u0e35\u0e48\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 (Created_At)',\n      '\u0e1c\u0e39\u0e49\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01 (Staff_Email)',\n      '\u0e0a\u0e37\u0e48\u0e2d-\u0e2a\u0e01\u0e38\u0e25 \u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c',\n      '\u0e17\u0e35\u0e48\u0e2d\u0e22\u0e39\u0e48\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c',\n      '\u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e42\u0e17\u0e23\u0e28\u0e31\u0e1e\u0e17\u0e4c',\n      '\u0e40\u0e25\u0e02\u0e1a\u0e31\u0e15\u0e23\u0e1b\u0e23\u0e30\u0e0a\u0e32\u0e0a\u0e19',\n      '\u0e08\u0e33\u0e19\u0e27\u0e19\u0e2a\u0e31\u0e15\u0e27\u0e4c (\u0e15\u0e31\u0e27)',\n      '\u0e2a\u0e23\u0e38\u0e1b\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e2a\u0e31\u0e15\u0e27\u0e4c',\n      '\u0e27\u0e31\u0e19\u0e19\u0e31\u0e14\u0e2b\u0e21\u0e32\u0e22\u0e2b\u0e25\u0e31\u0e01',\n      '\u0e40\u0e14\u0e37\u0e2d\u0e19\u0e17\u0e35\u0e48\u0e19\u0e31\u0e14\u0e2b\u0e21\u0e32\u0e22 (YYYY-MM)',\n      '\u0e23\u0e27\u0e21\u0e04\u0e48\u0e32\u0e1a\u0e23\u0e34\u0e01\u0e32\u0e23 (\u0e1a\u0e32\u0e17)',\n      '\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e04\u0e34\u0e27'\n    ];\n    ownerSheet.appendRow(ownerHeaders);\n    ownerSheet.getRange(1, 1, 1, ownerHeaders.length)\n      .setBackground('#1e293b')\n      .setFontColor('#ffffff')\n      .setFontWeight('bold');\n    ownerSheet.setFrozenRows(1);\n  }\n\n  cleanDemoAndRepairDatabase(petSheet, ownerSheet);\n}\n\n/**\n * \u0e25\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e15\u0e31\u0e27\u0e2d\u0e22\u0e48\u0e32\u0e07 4 \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e41\u0e23\u0e01 (\u0e16\u0e49\u0e32\u0e40\u0e04\u0e22\u0e16\u0e39\u0e01\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e44\u0e27\u0e49) \u0e41\u0e25\u0e30\u0e08\u0e31\u0e14\u0e25\u0e33\u0e14\u0e31\u0e1a\u0e23\u0e2b\u0e31\u0e2a HN48 \u0e02\u0e2d\u0e07\u0e40\u0e04\u0e2a\u0e08\u0e23\u0e34\u0e07\u0e17\u0e35\u0e48\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\u0e43\u0e2b\u0e49\u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01 001 \u0e40\u0e2a\u0e21\u0e2d\n */\nfunction cleanDemoAndRepairDatabase(petSheet, ownerSheet) {\n  if (petSheet && petSheet.getLastRow() > 1) {\n    const petData = petSheet.getDataRange().getValues();\n    for (let i = petData.length - 1; i >= 1; i--) {\n      const oName = String(petData[i][4] || '').trim();\n      if (DEMO_OWNER_NAMES.indexOf(oName) !== -1) {\n        petSheet.deleteRow(i + 1);\n      }\n    }\n  }\n\n  if (ownerSheet && ownerSheet.getLastRow() > 1) {\n    const ownerData = ownerSheet.getDataRange().getValues();\n    for (let j = ownerData.length - 1; j >= 1; j--) {\n      const oName = String(ownerData[j][3] || '').trim();\n      if (DEMO_OWNER_NAMES.indexOf(oName) !== -1) {\n        ownerSheet.deleteRow(j + 1);\n      }\n    }\n  }\n\n  // \u0e25\u0e1a\u0e04\u0e34\u0e27\u0e17\u0e35\u0e48\u0e16\u0e39\u0e01\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e0b\u0e49\u0e33\u0e01\u0e31\u0e19\u0e42\u0e14\u0e22\u0e44\u0e21\u0e48\u0e15\u0e31\u0e49\u0e07\u0e43\u0e08 (\u0e0a\u0e37\u0e48\u0e2d\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07 + \u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e42\u0e17\u0e23 + \u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e2a\u0e31\u0e15\u0e27\u0e4c + \u0e27\u0e31\u0e19\u0e40\u0e27\u0e25\u0e32\u0e19\u0e31\u0e14 \u0e15\u0e23\u0e07\u0e01\u0e31\u0e19\u0e17\u0e38\u0e01\u0e1b\u0e23\u0e30\u0e01\u0e32\u0e23\u0e43\u0e19\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23)\n  if (ownerSheet && ownerSheet.getLastRow() > 1) {\n    const ownerData = ownerSheet.getDataRange().getValues();\n    const seenSignatures = {};\n    const duplicateBookingIds = {};\n    for (let j = 1; j < ownerData.length; j++) {\n      const bId = String(ownerData[j][0] || '').trim();\n      const oName = String(ownerData[j][3] || '').trim();\n      const oPhone = String(ownerData[j][5] || '').replace(/^'/, '').trim();\n      const petSum = String(ownerData[j][8] || '').trim();\n      const pDate = String(ownerData[j][9] || '').replace(/^'/, '').trim();\n      const st = String(ownerData[j][12] || '').trim();\n      if (st === '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23' && oName) {\n        const sig = oName + '|' + oPhone + '|' + petSum + '|' + pDate;\n        if (seenSignatures[sig]) {\n          duplicateBookingIds[bId] = true;\n        } else {\n          seenSignatures[sig] = bId;\n        }\n      }\n    }\n    const dupIds = Object.keys(duplicateBookingIds);\n    if (dupIds.length > 0) {\n      for (let j = ownerData.length - 1; j >= 1; j--) {\n        const bId = String(ownerData[j][0] || '').trim();\n        if (duplicateBookingIds[bId]) {\n          ownerSheet.deleteRow(j + 1);\n        }\n      }\n      if (petSheet && petSheet.getLastRow() > 1) {\n        const petData = petSheet.getDataRange().getValues();\n        for (let i = petData.length - 1; i >= 1; i--) {\n          const bId = String(petData[i][0] || '').trim();\n          if (duplicateBookingIds[bId]) {\n            petSheet.deleteRow(i + 1);\n          }\n        }\n      }\n    }\n  }\n\n  // \u0e15\u0e23\u0e27\u0e08\u0e2a\u0e2d\u0e1a\u0e41\u0e25\u0e30\u0e40\u0e23\u0e35\u0e22\u0e07\u0e25\u0e33\u0e14\u0e31\u0e1a\u0e23\u0e2b\u0e31\u0e2a HN48YYMMDDXXX \u0e02\u0e2d\u0e07\u0e40\u0e04\u0e2a\u0e17\u0e35\u0e48 \"\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\" \u0e43\u0e2b\u0e49\u0e40\u0e23\u0e34\u0e48\u0e21\u0e19\u0e31\u0e1a 001 \u0e41\u0e22\u0e01\u0e15\u0e32\u0e21\u0e41\u0e15\u0e48\u0e25\u0e30\u0e27\u0e31\u0e19\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14 (\u0e2b\u0e49\u0e32\u0e21\u0e40\u0e2d\u0e32\u0e40\u0e25\u0e02\u0e02\u0e2d\u0e07\u0e27\u0e31\u0e19\u0e2d\u0e37\u0e48\u0e19\u0e21\u0e32\u0e15\u0e48\u0e2d\u0e01\u0e31\u0e19)\n  if (ownerSheet && ownerSheet.getLastRow() > 1 && petSheet && petSheet.getLastRow() > 1) {\n    const ownerData = ownerSheet.getDataRange().getValues();\n    const petData = petSheet.getDataRange().getValues();\n    const seqByDateKey = {};\n\n    for (let j = 1; j < ownerData.length; j++) {\n      const oldId = String(ownerData[j][0] || '').trim();\n      const status = String(ownerData[j][12] || '').trim();\n\n      if (status === '\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19') {\n        let apptDate = '';\n        for (let i = 1; i < petData.length; i++) {\n          if (String(petData[i][0] || '').trim() === oldId) {\n            apptDate = formatDateOnly(petData[i][17]);\n            break;\n          }\n        }\n        if (!apptDate) {\n          apptDate = formatDateOnly(ownerData[j][9]);\n        }\n        let yy = '26', mm = '10', dd = '20';\n        if (apptDate && /^\\d{4}-\\d{2}-\\d{2}$/.test(apptDate)) {\n          yy = apptDate.substring(2, 4);\n          mm = apptDate.substring(5, 7);\n          dd = apptDate.substring(8, 10);\n        }\n        const dateKey = yy + mm + dd;\n        seqByDateKey[dateKey] = (seqByDateKey[dateKey] || 0) + 1;\n        const seqForThisDay = seqByDateKey[dateKey];\n        const expectedHnId = 'HN48' + dateKey + ('000' + seqForThisDay).slice(-3);\n\n        if (oldId !== expectedHnId) {\n          ownerSheet.getRange(j + 1, 1).setValue(expectedHnId);\n          let pIdx = 1;\n          for (let i = 1; i < petData.length; i++) {\n            if (String(petData[i][0] || '').trim() === oldId) {\n              petData[i][0] = expectedHnId;\n              petSheet.getRange(i + 1, 1).setValue(expectedHnId);\n              petSheet.getRange(i + 1, 2).setValue(expectedHnId + '-P' + pIdx++);\n            }\n          }\n        }\n      } else {\n        if (/^HN48/.test(oldId)) {\n          const waitId = 'WAIT-R' + j;\n          ownerSheet.getRange(j + 1, 1).setValue(waitId);\n          let pIdx = 1;\n          for (let i = 1; i < petData.length; i++) {\n            if (String(petData[i][0] || '').trim() === oldId) {\n              petData[i][0] = waitId;\n              petSheet.getRange(i + 1, 1).setValue(waitId);\n              petSheet.getRange(i + 1, 2).setValue(waitId + '-P' + pIdx++);\n            }\n          }\n        }\n      }\n    }\n  }\n}\n\n/**\n * \u0e14\u0e36\u0e07\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e17\u0e31\u0e49\u0e07\u0e2b\u0e21\u0e14\u0e2a\u0e33\u0e2b\u0e23\u0e31\u0e1a\u0e41\u0e2a\u0e14\u0e07\u0e1c\u0e25\u0e15\u0e2d\u0e19\u0e40\u0e23\u0e34\u0e48\u0e21\u0e15\u0e49\u0e19\u0e41\u0e25\u0e30\u0e1a\u0e19 Dashboard\n */\nfunction getInitialData() {\n  initDatabase();\n  const ss = getTargetSpreadsheet();\n  const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n  let userEmail = '\u0e1a\u0e38\u0e04\u0e25\u0e32\u0e01\u0e23\u0e43\u0e19\u0e2d\u0e07\u0e04\u0e4c\u0e01\u0e23';\n  try {\n    userEmail = Session.getActiveUser().getEmail() || '\u0e1a\u0e38\u0e04\u0e25\u0e32\u0e01\u0e23\u0e43\u0e19\u0e2d\u0e07\u0e04\u0e4c\u0e01\u0e23';\n  } catch (e) {}\n\n  let webAppUrl = '';\n  try {\n    webAppUrl = ScriptApp.getService().getUrl() || '';\n  } catch (e) {}\n\n  const values = petSheet.getDataRange().getValues();\n  const bookingsMap = {};\n  const bookingsList = [];\n\n  for (let i = 1; i < values.length; i++) {\n    const row = values[i];\n    const bookingId = String(row[0] || '').trim();\n    if (!bookingId) continue;\n\n    if (!bookingsMap[bookingId]) {\n      const bookingObj = {\n        bookingId: bookingId,\n        createdAt: formatCellDate(row[2]),\n        staffEmail: String(row[3] || ''),\n        ownerName: String(row[4] || ''),\n        ownerAddress: String(row[5] || ''),\n        phone: String(row[6] || '').replace(/^'/, ''),\n        nationalId: String(row[7] || '').replace(/^'/, ''),\n        status: String(row[22] || '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23').trim(),\n        pets: []\n      };\n      bookingsMap[bookingId] = bookingObj;\n      bookingsList.push(bookingObj);\n    }\n\n    const apptDate = formatDateOnly(row[17]);\n    const apptTime = formatTimeOnly(row[18]);\n    const apptMonth = String(row[19] || (apptDate ? apptDate.substring(0, 7) : '')).replace(/^'/, '').trim();\n    const rowStatus = String(row[22] || '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23').trim();\n\n    bookingsMap[bookingId].pets.push({\n      petId: String(row[1] || ''),\n      petName: String(row[8] || ''),\n      ownershipType: String(row[9] || '\u0e21\u0e35\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07'),\n      species: String(row[10] || '\u0e2a\u0e38\u0e19\u0e31\u0e02'),\n      gender: String(row[11] || '\u0e1c\u0e39\u0e49'),\n      ageYears: Number(row[12] || 0),\n      ageMonths: Number(row[13] || 0),\n      ageText: String(row[14] || ''),\n      breed: String(row[15] || '\u0e1c\u0e2a\u0e21'),\n      markings: String(row[16] || '-'),\n      appointmentDate: apptDate,\n      appointmentTime: apptTime,\n      appointmentMonth: apptMonth,\n      priceType: String(row[20] || '\u0e1f\u0e23\u0e35'),\n      priceAmount: Number(row[21] || 0),\n      petStatus: rowStatus\n    });\n  }\n\n  return {\n    userEmail: userEmail,\n    spreadsheetUrl: ss.getUrl(),\n    webAppUrl: webAppUrl,\n    bookings: bookingsList.reverse()\n  };\n}\n\n/**\n * \u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e17\u0e33\u0e2b\u0e21\u0e31\u0e19\u0e43\u0e2b\u0e21\u0e48 (\u0e2d\u0e34\u0e07\u0e40\u0e27\u0e25\u0e32 Asia/Bangkok GMT+7)\n */\nfunction saveBookingRecord(payload) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n\n  try {\n    initDatabase();\n    const ss = getTargetSpreadsheet();\n    const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n    const ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n\n    const now = new Date();\n    const tz = CONFIG.TIMEZONE;\n    const createdAtStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm');\n    let userEmail = 'staff@dld.go.th';\n    try {\n      userEmail = Session.getActiveUser().getEmail() || 'staff@dld.go.th';\n    } catch (e) {}\n\n    const ownerName = String(payload.ownerName || '').trim();\n    const ownerAddress = String(payload.ownerAddress || '').trim();\n    const phone = String(payload.phone || '').trim();\n    const nationalId = String(payload.nationalId || '').trim();\n    const pets = Array.isArray(payload.pets) ? payload.pets : [];\n\n    if (!ownerName || !ownerAddress || !phone || pets.length === 0) {\n      throw new Error('\u0e01\u0e23\u0e38\u0e13\u0e32\u0e01\u0e23\u0e2d\u0e01\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e02\u0e2d\u0e07\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e41\u0e25\u0e30\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e2a\u0e31\u0e15\u0e27\u0e4c\u0e2d\u0e22\u0e48\u0e32\u0e07\u0e19\u0e49\u0e2d\u0e22 1 \u0e15\u0e31\u0e27\u0e43\u0e2b\u0e49\u0e04\u0e23\u0e1a\u0e16\u0e49\u0e27\u0e19');\n    }\n\n    // \u0e1b\u0e49\u0e2d\u0e07\u0e01\u0e31\u0e19\u0e01\u0e32\u0e23\u0e1a\u0e31\u0e19\u0e17\u0e36\u0e01\u0e0b\u0e49\u0e33 (Idempotency Check): \u0e2b\u0e32\u0e01\u0e21\u0e35\u0e04\u0e34\u0e27\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23\u0e02\u0e2d\u0e07\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07\u0e04\u0e19\u0e40\u0e14\u0e35\u0e22\u0e27\u0e01\u0e31\u0e19 \u0e40\u0e1a\u0e2d\u0e23\u0e4c\u0e40\u0e14\u0e35\u0e22\u0e27\u0e01\u0e31\u0e19 \u0e41\u0e25\u0e30\u0e23\u0e32\u0e22\u0e01\u0e32\u0e23\u0e2a\u0e31\u0e15\u0e27\u0e4c+\u0e27\u0e31\u0e19\u0e40\u0e27\u0e25\u0e32\u0e19\u0e31\u0e14\u0e15\u0e23\u0e07\u0e01\u0e31\u0e19\u0e2d\u0e22\u0e39\u0e48\u0e41\u0e25\u0e49\u0e27 \u0e44\u0e21\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e2a\u0e23\u0e49\u0e32\u0e07\u0e41\u0e16\u0e27\u0e0b\u0e49\u0e33\n    const checkSummaryParts = pets.map(function(pet) {\n      return String(pet.petName || '').trim() + ' (' + String(pet.species || '\u0e2a\u0e38\u0e19\u0e31\u0e02') + '-' + String(pet.gender || '\u0e1c\u0e39\u0e49') + ')';\n    }).join(', ');\n    const firstApptDate = formatDateOnly(pets[0].appointmentDate) || Utilities.formatDate(now, tz, 'yyyy-MM-dd');\n    const firstApptTime = formatTimeOnly(pets[0].appointmentTime) || Utilities.formatDate(now, tz, 'HH:mm');\n    const checkPrimaryDate = firstApptDate + ' ' + firstApptTime;\n\n    if (ownerSheet && ownerSheet.getLastRow() > 1) {\n      const existingOwners = ownerSheet.getDataRange().getValues();\n      for (let j = existingOwners.length - 1; j >= 1; j--) {\n        const exId = String(existingOwners[j][0] || '').trim();\n        const exName = String(existingOwners[j][3] || '').trim();\n        const exPhone = String(existingOwners[j][5] || '').replace(/^'/, '').trim();\n        const exSum = String(existingOwners[j][8] || '').trim();\n        const exDate = String(existingOwners[j][9] || '').replace(/^'/, '').trim();\n        const exStatus = String(existingOwners[j][12] || '').trim();\n        if (exStatus === '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23' && exName === ownerName && exPhone === phone && exSum === checkSummaryParts && exDate === checkPrimaryDate) {\n          return {\n            success: true,\n            bookingId: exId,\n            deduplicated: true,\n            data: getInitialData()\n          };\n        }\n      }\n    }\n\n    const bookingId = 'WAIT-' + Utilities.formatDate(now, tz, 'yyMMddHHmmss');\n\n    let totalCost = 0;\n    const petSummaryParts = [];\n    let primaryDate = '';\n    let primaryMonth = '';\n\n    pets.forEach(function(pet, idx) {\n      const petId = bookingId + '-P' + (idx + 1);\n      const years = Number(pet.ageYears || 0);\n      const months = Number(pet.ageMonths || 0);\n      const ageText = years + ' \u0e1b\u0e35 ' + months + ' \u0e40\u0e14\u0e37\u0e2d\u0e19';\n      const apptDate = formatDateOnly(pet.appointmentDate) || Utilities.formatDate(now, tz, 'yyyy-MM-dd');\n      const apptTime = formatTimeOnly(pet.appointmentTime) || Utilities.formatDate(now, tz, 'HH:mm');\n      const apptMonth = apptDate ? apptDate.substring(0, 7) : Utilities.formatDate(now, tz, 'yyyy-MM');\n      const priceType = String(pet.priceType || '\u0e1f\u0e23\u0e35');\n      const priceAmount = priceType === '\u0e1f\u0e23\u0e35' ? 0 : Number(pet.priceAmount || 0);\n\n      if (!primaryDate) {\n        primaryDate = apptDate + ' ' + apptTime;\n        primaryMonth = apptMonth;\n      }\n\n      totalCost += priceAmount;\n      petSummaryParts.push(pet.petName + ' (' + pet.species + '-' + pet.gender + ')');\n\n      petSheet.appendRow([\n        bookingId,\n        petId,\n        \"'\" + createdAtStr,\n        userEmail,\n        ownerName,\n        ownerAddress,\n        \"'\" + phone,\n        nationalId && nationalId !== '-' ? \"'\" + nationalId : '-',\n        String(pet.petName || '').trim(),\n        String(pet.ownershipType || '\u0e21\u0e35\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07'),\n        String(pet.species || '\u0e2a\u0e38\u0e19\u0e31\u0e02'),\n        String(pet.gender || '\u0e1c\u0e39\u0e49'),\n        years,\n        months,\n        ageText,\n        String(pet.breed || '\u0e1c\u0e2a\u0e21').trim(),\n        String(pet.markings || '-').trim(),\n        \"'\" + apptDate,\n        \"'\" + apptTime,\n        \"'\" + apptMonth,\n        priceType,\n        priceAmount,\n        '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23'\n      ]);\n    });\n\n    ownerSheet.appendRow([\n      bookingId,\n      \"'\" + createdAtStr,\n      userEmail,\n      ownerName,\n      ownerAddress,\n      \"'\" + phone,\n      nationalId && nationalId !== '-' ? \"'\" + nationalId : '-',\n      pets.length,\n      petSummaryParts.join(', '),\n      \"'\" + primaryDate,\n      \"'\" + primaryMonth,\n      totalCost,\n      '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23'\n    ]);\n\n    return {\n      success: true,\n      bookingId: bookingId,\n      data: getInitialData()\n    };\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * \u0e41\u0e01\u0e49\u0e44\u0e02\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e40\u0e14\u0e34\u0e21\n */\nfunction updateBookingRecord(payload) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n\n  try {\n    initDatabase();\n    const ss = getTargetSpreadsheet();\n    const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n    const ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n    const tz = CONFIG.TIMEZONE;\n    const now = new Date();\n    const updatedAtStr = Utilities.formatDate(now, tz, 'yyyy-MM-dd HH:mm');\n    let userEmail = 'staff@dld.go.th';\n    try {\n      userEmail = Session.getActiveUser().getEmail() || 'staff@dld.go.th';\n    } catch (e) {}\n\n    const bookingId = String(payload.bookingId || '').trim();\n    if (!bookingId) throw new Error('\u0e44\u0e21\u0e48\u0e1e\u0e1a\u0e23\u0e2b\u0e31\u0e2a\u0e04\u0e34\u0e27\u0e17\u0e35\u0e48\u0e15\u0e49\u0e2d\u0e07\u0e01\u0e32\u0e23\u0e41\u0e01\u0e49\u0e44\u0e02');\n\n    const ownerName = String(payload.ownerName || '').trim();\n    const ownerAddress = String(payload.ownerAddress || '').trim();\n    const phone = String(payload.phone || '').trim();\n    const nationalId = String(payload.nationalId || '').trim();\n    const status = String(payload.status || '\u0e23\u0e2d\u0e14\u0e33\u0e40\u0e19\u0e34\u0e19\u0e01\u0e32\u0e23').trim();\n    const pets = Array.isArray(payload.pets) ? payload.pets : [];\n\n    const petData = petSheet.getDataRange().getValues();\n    for (let i = petData.length - 1; i >= 1; i--) {\n      if (String(petData[i][0]).trim() === bookingId) {\n        petSheet.deleteRow(i + 1);\n      }\n    }\n\n    const ownerData = ownerSheet.getDataRange().getValues();\n    for (let j = ownerData.length - 1; j >= 1; j--) {\n      if (String(ownerData[j][0]).trim() === bookingId) {\n        ownerSheet.deleteRow(j + 1);\n      }\n    }\n\n    let totalCost = 0;\n    const petSummaryParts = [];\n    let primaryDate = '';\n    let primaryMonth = '';\n\n    pets.forEach(function(pet, idx) {\n      const petId = bookingId + '-P' + (idx + 1);\n      const years = Number(pet.ageYears || 0);\n      const months = Number(pet.ageMonths || 0);\n      const ageText = years + ' \u0e1b\u0e35 ' + months + ' \u0e40\u0e14\u0e37\u0e2d\u0e19';\n      const apptDate = formatDateOnly(pet.appointmentDate) || Utilities.formatDate(now, tz, 'yyyy-MM-dd');\n      const apptTime = formatTimeOnly(pet.appointmentTime) || Utilities.formatDate(now, tz, 'HH:mm');\n      const apptMonth = apptDate ? apptDate.substring(0, 7) : Utilities.formatDate(now, tz, 'yyyy-MM');\n      const priceType = String(pet.priceType || '\u0e1f\u0e23\u0e35');\n      const priceAmount = priceType === '\u0e1f\u0e23\u0e35' ? 0 : Number(pet.priceAmount || 0);\n\n      if (!primaryDate) {\n        primaryDate = apptDate + ' ' + apptTime;\n        primaryMonth = apptMonth;\n      }\n\n      totalCost += priceAmount;\n      petSummaryParts.push(pet.petName + ' (' + pet.species + '-' + pet.gender + ')');\n\n      petSheet.appendRow([\n        bookingId,\n        petId,\n        \"'\" + updatedAtStr,\n        userEmail,\n        ownerName,\n        ownerAddress,\n        \"'\" + phone,\n        nationalId && nationalId !== '-' ? \"'\" + nationalId : '-',\n        String(pet.petName || '').trim(),\n        String(pet.ownershipType || '\u0e21\u0e35\u0e40\u0e08\u0e49\u0e32\u0e02\u0e2d\u0e07'),\n        String(pet.species || '\u0e2a\u0e38\u0e19\u0e31\u0e02'),\n        String(pet.gender || '\u0e1c\u0e39\u0e49'),\n        years,\n        months,\n        ageText,\n        String(pet.breed || '\u0e1c\u0e2a\u0e21').trim(),\n        String(pet.markings || '-').trim(),\n        \"'\" + apptDate,\n        \"'\" + apptTime,\n        \"'\" + apptMonth,\n        priceType,\n        priceAmount,\n        status\n      ]);\n    });\n\n    ownerSheet.appendRow([\n      bookingId,\n      \"'\" + updatedAtStr,\n      userEmail,\n      ownerName,\n      ownerAddress,\n      \"'\" + phone,\n      nationalId && nationalId !== '-' ? \"'\" + nationalId : '-',\n      pets.length,\n      petSummaryParts.join(', '),\n      \"'\" + primaryDate,\n      \"'\" + primaryMonth,\n      totalCost,\n      status\n    ]);\n\n    return {\n      success: true,\n      bookingId: bookingId,\n      data: getInitialData()\n    };\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * \u0e25\u0e1a\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25\u0e01\u0e32\u0e23\u0e08\u0e2d\u0e07\u0e04\u0e34\u0e27\u0e2d\u0e2d\u0e01\u0e08\u0e32\u0e01\u0e10\u0e32\u0e19\u0e02\u0e49\u0e2d\u0e21\u0e39\u0e25 Google Sheets (\u0e23\u0e2d\u0e07\u0e23\u0e31\u0e1a\u0e01\u0e32\u0e23\u0e25\u0e1a\u0e17\u0e38\u0e01\u0e2a\u0e16\u0e32\u0e19\u0e30 \u0e23\u0e27\u0e21\u0e16\u0e36\u0e07 \"\u0e22\u0e01\u0e40\u0e25\u0e34\u0e01\u0e04\u0e34\u0e27\")\n */\nfunction deleteBookingRecord(bookingId, ownerName, phone) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n\n  try {\n    const ss = getTargetSpreadsheet();\n    const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n    const ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n    const targetId = String(bookingId || '').trim();\n    const targetOwner = String(ownerName || '').trim();\n    const targetPhone = String(phone || '').replace(/^'/, '').trim();\n\n    let deletedPetRows = 0;\n    if (petSheet && petSheet.getLastRow() > 1) {\n      const petData = petSheet.getDataRange().getValues();\n      for (let i = petData.length - 1; i >= 1; i--) {\n        const rowId = String(petData[i][0] || '').trim();\n        const rowOwner = String(petData[i][4] || '').trim();\n        const rowPhone = String(petData[i][6] || '').replace(/^'/, '').trim();\n        if ((targetId && rowId === targetId) || (targetOwner && rowOwner === targetOwner && (!targetPhone || rowPhone === targetPhone))) {\n          petSheet.deleteRow(i + 1);\n          deletedPetRows++;\n        }\n      }\n    }\n\n    if (ownerSheet && ownerSheet.getLastRow() > 1) {\n      const ownerData = ownerSheet.getDataRange().getValues();\n      for (let j = ownerData.length - 1; j >= 1; j--) {\n        const rowId = String(ownerData[j][0] || '').trim();\n        const rowOwner = String(ownerData[j][3] || '').trim();\n        const rowPhone = String(ownerData[j][5] || '').replace(/^'/, '').trim();\n        if ((targetId && rowId === targetId) || (targetOwner && rowOwner === targetOwner && (!targetPhone || rowPhone === targetPhone))) {\n          ownerSheet.deleteRow(j + 1);\n        }\n      }\n    }\n\n    return {\n      success: true,\n      deletedCount: deletedPetRows,\n      data: getInitialData()\n    };\n  } finally {\n    lock.releaseLock();\n  }\n}\n\n/**\n * \u0e2d\u0e31\u0e1b\u0e40\u0e14\u0e15\u0e2a\u0e16\u0e32\u0e19\u0e30\u0e04\u0e34\u0e27\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e17\u0e33\u0e2b\u0e21\u0e31\u0e19 (\u0e23\u0e31\u0e19\u0e23\u0e2b\u0e31\u0e2a HN48YYMMDDXXX \u0e40\u0e23\u0e34\u0e48\u0e21\u0e08\u0e32\u0e01 001 \u0e40\u0e09\u0e1e\u0e32\u0e30\u0e40\u0e21\u0e37\u0e48\u0e2d\u0e22\u0e37\u0e19\u0e22\u0e31\u0e19 \"\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19\")\n */\nfunction updateBookingStatus(bookingId, newStatus) {\n  const lock = LockService.getScriptLock();\n  lock.waitLock(10000);\n  try {\n    const ss = getTargetSpreadsheet();\n    const tz = CONFIG.TIMEZONE;\n    const now = new Date();\n    const petSheet = ss.getSheetByName(CONFIG.SHEET_PETS);\n    const ownerSheet = ss.getSheetByName(CONFIG.SHEET_OWNERS);\n\n    let assignedHnId = String(bookingId || '').trim();\n    let appointmentDateForHn = '';\n\n    if (petSheet && petSheet.getLastRow() > 1) {\n      const petData = petSheet.getDataRange().getValues();\n      for (let i = 1; i < petData.length; i++) {\n        if (String(petData[i][0] || '').trim() === assignedHnId && !appointmentDateForHn) {\n          appointmentDateForHn = formatDateOnly(petData[i][17]);\n        }\n      }\n    }\n\n    if (newStatus === '\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19' && !/^HN48\\d{9}$/.test(assignedHnId)) {\n      assignedHnId = generateHN48QueueId(appointmentDateForHn, ownerSheet);\n    } else if (newStatus !== '\u0e1c\u0e48\u0e32\u0e15\u0e31\u0e14\u0e40\u0e2a\u0e23\u0e47\u0e08\u0e2a\u0e34\u0e49\u0e19' && /^HN48/.test(assignedHnId)) {\n      assignedHnId = 'WAIT-' + Utilities.formatDate(now, tz, 'yyMMddHHmmss');\n    }\n\n    if (petSheet && petSheet.getLastRow() > 1) {\n      const petData = petSheet.getDataRange().getValues();\n      let petIdx = 1;\n      for (let i = 1; i < petData.length; i++) {\n        if (String(petData[i][0] || '').trim() === String(bookingId || '').trim()) {\n          if (assignedHnId !== String(bookingId || '').trim()) {\n            petSheet.getRange(i + 1, 1).setValue(assignedHnId);\n            petSheet.getRange(i + 1, 2).setValue(assignedHnId + '-P' + petIdx++);\n          }\n          petSheet.getRange(i + 1, 23).setValue(newStatus);\n        }\n      }\n    }\n\n    if (ownerSheet && ownerSheet.getLastRow() > 1) {\n      const ownerData = ownerSheet.getDataRange().getValues();\n      for (let j = 1; j < ownerData.length; j++) {\n        if (String(ownerData[j][0] || '').trim() === String(bookingId || '').trim()) {\n          if (assignedHnId !== String(bookingId || '').trim()) {\n            ownerSheet.getRange(j + 1, 1).setValue(assignedHnId);\n          }\n          ownerSheet.getRange(j + 1, 13).setValue(newStatus);\n        }\n      }\n    }\n\n    cleanDemoAndRepairDatabase(petSheet, ownerSheet);\n\n    return {\n      success: true,\n      assignedBookingId: assignedHnId,\n      data: getInitialData()\n    };\n  } finally {\n    lock.releaseLock();\n  }\n}\n\nfunction formatCellDate(val) {\n  if (!val) return '';\n  if (Object.prototype.toString.call(val) === '[object Date]') {\n    return Utilities.formatDate(val, CONFIG.TIMEZONE, 'yyyy-MM-dd HH:mm');\n  }\n  return String(val).replace(/^'/, '').trim();\n}\n\nfunction formatDateOnly(val) {\n  if (!val) return '';\n  if (Object.prototype.toString.call(val) === '[object Date]') {\n    return Utilities.formatDate(val, CONFIG.TIMEZONE, 'yyyy-MM-dd');\n  }\n  const clean = String(val).replace(/^'/, '').trim();\n  const m = clean.match(/(\\d{4}-\\d{2}-\\d{2})/);\n  if (m) return m[1];\n  return clean.substring(0, 10);\n}\n\n/**\n * \u0e41\u0e1b\u0e25\u0e07\u0e04\u0e48\u0e32\u0e40\u0e27\u0e25\u0e32\u0e08\u0e32\u0e01 Google Sheets (\u0e1b\u0e49\u0e2d\u0e07\u0e01\u0e31\u0e19\u0e1b\u0e31\u0e0d\u0e2b\u0e32\u0e41\u0e2a\u0e14\u0e07 Sat Dec 30 1899 10:00:00 GMT+0642)\n */\nfunction formatTimeOnly(val) {\n  if (val === null || val === undefined || val === '') return '';\n  const str = String(val).replace(/^'/, '').trim();\n  const mSimple = str.match(/^(\\d{1,2}):(\\d{2})$/);\n  if (mSimple) {\n    return ('0' + mSimple[1]).slice(-2) + ':' + mSimple[2];\n  }\n  const mTimeInStr = str.match(/(\\d{1,2}):(\\d{2}):\\d{2}/);\n  if (mTimeInStr) {\n    return ('0' + mTimeInStr[1]).slice(-2) + ':' + mTimeInStr[2];\n  }\n  if (Object.prototype.toString.call(val) === '[object Date]') {\n    const hh = ('0' + val.getHours()).slice(-2);\n    const mm = ('0' + val.getMinutes()).slice(-2);\n    return hh + ':' + mm;\n  }\n  return str;\n}\n";
@@ -3322,6 +4472,9 @@
       petDraftCards = [createBlankPetDraft(null)];
       renderPetCards();
       loadInitialBookings();
+      setTimeout(function() {
+        initNotificationServices();
+      }, 1500);
     };
   </script>
 </body>
