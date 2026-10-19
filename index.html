@@ -88,8 +88,8 @@
         </div>
       </div>
 
-      <!-- Main Navigation Tabs (2 เมนูหลัก) -->
-      <nav class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2.5 border-t border-white/15 pt-3" aria-label="Main Navigation">
+      <!-- Main Navigation Tabs (3 เมนูหลัก) -->
+      <nav class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-2.5 border-t border-white/15 pt-3" aria-label="Main Navigation">
         <button type="button" id="tabBtnBooking" onclick="switchView('booking')"
           class="w-full justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 bg-white text-teal-900 shadow-sm">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -98,12 +98,21 @@
           <span id="tabBookingLabel">1. จองคิวผ่าตัดทำหมัน (กรอกประวัติ)</span>
         </button>
 
+        <button type="button" id="tabBtnRegistry" onclick="switchView('registry')"
+          class="w-full justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 bg-white/10 text-white hover:bg-white/20">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+          </svg>
+          <span>2. ทะเบียนรายชื่อ</span>
+          <span id="navRegistryCountBadge" class="ml-1 px-2 py-0.5 text-xs rounded-full bg-teal-950/60 text-teal-100">0 คิว</span>
+        </button>
+
         <button type="button" id="tabBtnDashboard" onclick="switchView('dashboard')"
           class="w-full justify-center px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center gap-2 bg-white/10 text-white hover:bg-white/20">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
           </svg>
-          <span>2. Dashboard สรุปข้อมูลรายเดือน</span>
+          <span>3. Dashboard สรุปข้อมูลรายเดือน</span>
           <span id="navTotalBookingsBadge" class="ml-1 px-2 py-0.5 text-xs rounded-full bg-teal-950/60 text-teal-100">ผ่าตัดเสร็จ 0 ราย</span>
         </button>
       </nav>
@@ -160,7 +169,7 @@
         </div>
         <button type="button" onclick="cancelEditBooking()"
           class="px-4 py-2 rounded-xl text-xs font-bold bg-white text-slate-800 border border-amber-400 hover:bg-amber-100 transition shrink-0">
-          ยกเลิกการแก้ไข (กลับหน้า Dashboard)
+          ยกเลิกการแก้ไข (กลับหน้าทะเบียนรายชื่อ)
         </button>
       </div>
 
@@ -340,7 +349,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
               </svg>
-              <span id="btnSubmitGoDashboardText">บันทึกข้อมูล และไปหน้า Dashboard</span>
+              <span id="btnSubmitGoDashboardText">บันทึกข้อมูล และไปหน้าทะเบียนรายชื่อ</span>
             </button>
           </div>
         </div>
@@ -348,8 +357,8 @@
       </form>
     </section>
 
-    <!-- ==================== VIEW 2: DASHBOARD ==================== -->
-    <section id="viewDashboard" class="hidden space-y-6">
+    <!-- ==================== VIEW 2: REGISTRY & CALENDAR (ทะเบียนรายชื่อ) ==================== -->
+    <section id="viewRegistry" class="hidden space-y-6">
 
       <!-- 1. TOP SECTION: Master List Table of Individual Bookings (ทะเบียนรายชื่อผู้รับบริการ อยู่บนสุด + เลือกเดือน + จำกัด 10 หรือ 25 คิวต่อหน้า) -->
       <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -362,7 +371,7 @@
                   แสดง 0 รายการ
                 </span>
               </div>
-              <p class="text-xs text-slate-300 mt-0.5">เมื่อเปลี่ยนสถานะเป็น "✓ ผ่าตัดเสร็จสิ้น" ระบบจะรันรหัส HN48YYMMDDXXX (เริ่มจาก 001 ของวันผ่าตัดนั้นๆ) และนำไปคำนวณในสรุป Dashboard ด้านล่างทันที</p>
+              <p class="text-xs text-slate-300 mt-0.5">เมื่อเปลี่ยนสถานะเป็น "✓ ผ่าตัดเสร็จสิ้น" ระบบจะรันรหัส HN48YYMMDDXXX (เริ่มจาก 001 ของวันผ่าตัดนั้นๆ) และนำไปคำนวณในเมนู 3. Dashboard สรุปข้อมูลรายเดือนทันที</p>
             </div>
 
             <div class="flex flex-wrap items-center gap-2 shrink-0">
@@ -570,7 +579,12 @@
         </div>
       </div>
 
-      <!-- 2. MIDDLE SECTION: Dashboard Summary & Filter Bar -->
+    </section>
+
+    <!-- ==================== VIEW 3: DASHBOARD (3. Dashboard สรุปข้อมูลรายเดือน) ==================== -->
+    <section id="viewDashboard" class="hidden space-y-6">
+
+      <!-- 1. TOP SECTION OF MENU 3: Dashboard Summary & Filter Bar -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-slate-100">
           <div class="flex items-start gap-3">
@@ -845,7 +859,7 @@
               <span class="font-bold text-sm text-slate-800">ไฟล์ที่ 2: Index.html (นำไปวางทับใน Apps Script หรืออัปโหลดเป็น index.html บน GitHub Pages)</span>
               <button type="button" onclick="copyCurrentIndexHtml()"
                 class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-slate-950 hover:bg-amber-600 transition">
-                คัดลอก Index.html เวอร์ชันล่าสุด (v3.2 มีแจ้งเตือน + ตารางปฏิทิน)
+                คัดลอก Index.html เวอร์ชันล่าสุด (v3.3 แยก 3 เมนู + แจ้งเตือน + ตารางปฏิทิน)
               </button>
             </div>
           </div>
@@ -1574,6 +1588,13 @@
     }
 
     function updateNavBadge() {
+      const regBadge = document.getElementById('navRegistryCountBadge');
+      const activeBookings = bookingsState.filter(function(b) { return b.status !== 'ยกเลิกคิว'; });
+      const activePets = activeBookings.reduce(function(acc, b) { return acc + (b.pets ? b.pets.length : 0); }, 0);
+      if (regBadge) {
+        regBadge.textContent = bookingsState.length + ' คิว (' + activePets + ' ตัว)';
+      }
+
       const badge = document.getElementById('navTotalBookingsBadge');
       const completedBookings = bookingsState.filter(function(b) { return b.status === 'ผ่าตัดเสร็จสิ้น'; });
       const totalPets = completedBookings.reduce(function(acc, b) { return acc + (b.pets ? b.pets.length : 0); }, 0);
@@ -1586,10 +1607,12 @@
     function switchView(viewName) {
       const views = {
         booking: document.getElementById('viewBooking'),
+        registry: document.getElementById('viewRegistry'),
         dashboard: document.getElementById('viewDashboard')
       };
       const buttons = {
         booking: document.getElementById('tabBtnBooking'),
+        registry: document.getElementById('tabBtnRegistry'),
         dashboard: document.getElementById('tabBtnDashboard')
       };
 
@@ -1604,7 +1627,7 @@
         }
       });
 
-      if (viewName === 'dashboard') {
+      if (viewName === 'registry' || viewName === 'dashboard') {
         refreshMonthDropdown();
         renderDashboard();
       }
@@ -1902,7 +1925,7 @@
       document.getElementById('editingBookingIdLabel').textContent = record.bookingId;
       document.getElementById('btnCancelEditBottom').classList.remove('hidden');
       document.getElementById('btnSubmitStayText').textContent = 'บันทึกการแก้ไขข้อมูล';
-      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกการแก้ไข และกลับหน้า Dashboard';
+      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกการแก้ไข และไปหน้าทะเบียนรายชื่อ';
       document.getElementById('tabBookingLabel').textContent = '1. แก้ไขคิว (' + record.bookingId + ')';
 
       renderPetCards();
@@ -1916,10 +1939,10 @@
       document.getElementById('editModeBanner').classList.add('hidden');
       document.getElementById('btnCancelEditBottom').classList.add('hidden');
       document.getElementById('btnSubmitStayText').textContent = 'บันทึกข้อมูลคิวนี้';
-      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกข้อมูล และไปหน้า Dashboard';
+      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกข้อมูล และไปหน้าทะเบียนรายชื่อ';
       document.getElementById('tabBookingLabel').textContent = '1. จองคิวผ่าตัดทำหมัน (กรอกประวัติ)';
       resetBookingForm(true);
-      switchView('dashboard');
+      switchView('registry');
     }
 
     function editFromModal() {
@@ -2017,7 +2040,7 @@
         document.getElementById('editModeBanner').classList.add('hidden');
         document.getElementById('btnCancelEditBottom').classList.add('hidden');
         document.getElementById('btnSubmitStayText').textContent = 'บันทึกข้อมูลคิวนี้';
-        document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกข้อมูล และไปหน้า Dashboard';
+        document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกข้อมูล และไปหน้าทะเบียนรายชื่อ';
         document.getElementById('tabBookingLabel').textContent = '1. จองคิวผ่าตัดทำหมัน (กรอกประวัติ)';
       }
 
@@ -2191,7 +2214,7 @@
         if (txtGo) txtGo.textContent = '⏳ กำลังบันทึกข้อมูล...';
       } else {
         if (txtStay) txtStay.textContent = editingBookingId ? 'บันทึกการแก้ไขข้อมูล' : 'บันทึกข้อมูลคิวนี้';
-        if (txtGo) txtGo.textContent = editingBookingId ? 'บันทึกการแก้ไข และกลับหน้า Dashboard' : 'บันทึกข้อมูล และไปหน้า Dashboard';
+        if (txtGo) txtGo.textContent = editingBookingId ? 'บันทึกการแก้ไข และไปหน้าทะเบียนรายชื่อ' : 'บันทึกข้อมูล และไปหน้าทะเบียนรายชื่อ';
       }
     }
 
@@ -2419,7 +2442,7 @@
       }
 
       if (redirectAfterSave) {
-        switchView('dashboard');
+        switchView('registry');
         openDetailModal(bookingId);
       }
     }
@@ -2430,7 +2453,7 @@
       document.getElementById('editModeBanner').classList.add('hidden');
       document.getElementById('btnCancelEditBottom').classList.add('hidden');
       document.getElementById('btnSubmitStayText').textContent = 'บันทึกข้อมูลคิวนี้';
-      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกข้อมูล และไปหน้า Dashboard';
+      document.getElementById('btnSubmitGoDashboardText').textContent = 'บันทึกข้อมูล และไปหน้าทะเบียนรายชื่อ';
       document.getElementById('tabBookingLabel').textContent = '1. จองคิวผ่าตัดทำหมัน (กรอกประวัติ)';
 
       updateNavBadge();
@@ -2440,7 +2463,7 @@
       showToast('อัปเดตข้อมูลรหัสคิว ' + savedId + ' เรียบร้อยแล้ว');
 
       if (redirectAfterSave) {
-        switchView('dashboard');
+        switchView('registry');
       }
     }
 
@@ -2466,10 +2489,6 @@
 
     // ==================== DASHBOARD, SEARCH & MONTHLY FILTERING ====================
     function syncSearchInputs(val) {
-      const topInput = document.getElementById('filterSearch');
-      const tableInput = document.getElementById('tableQuickSearch');
-      if (topInput && topInput.value !== val) topInput.value = val;
-      if (tableInput && tableInput.value !== val) tableInput.value = val;
       tableCurrentPage = 1;
       renderDashboard();
     }
@@ -2571,11 +2590,15 @@
       const monthFilter = forceOnlyCompleted
         ? (dashMonthEl ? dashMonthEl.value : 'ALL')
         : (tableMonthEl ? tableMonthEl.value : 'ALL');
-      const speciesFilter = document.getElementById('filterSpecies').value;
-      const ownershipFilter = document.getElementById('filterOwnership').value;
+      const speciesFilter = forceOnlyCompleted ? document.getElementById('filterSpecies').value : 'ALL';
+      const ownershipFilter = forceOnlyCompleted ? document.getElementById('filterOwnership').value : 'ALL';
       const statusEl = document.getElementById('filterStatus');
       const statusFilter = statusEl ? statusEl.value : 'ALL';
-      const searchStr = document.getElementById('filterSearch').value.trim().toLowerCase();
+      const dashSearchEl = document.getElementById('filterSearch');
+      const tableSearchEl = document.getElementById('tableQuickSearch');
+      const searchStr = forceOnlyCompleted
+        ? (dashSearchEl ? dashSearchEl.value.trim().toLowerCase() : '')
+        : (tableSearchEl ? tableSearchEl.value.trim().toLowerCase() : '');
 
       const filteredBookings = [];
 
@@ -3950,7 +3973,7 @@
       const targetId = lastPushAlertBookingId;
       closeLivePushAlertBanner();
       if (targetId) {
-        switchView('dashboard');
+        switchView('registry');
         openDetailModal(targetId);
       }
     }
@@ -3979,7 +4002,7 @@
       }
       listEl.innerHTML = notificationHistory.map(function(item) {
         const viewBtn = item.bookingId
-          ? '<button type="button" onclick="closeNotificationModal(); switchView(\'dashboard\'); openDetailModal(\'' + escapeHtml(item.bookingId) + '\')" class="text-teal-700 font-bold hover:underline shrink-0">ดูคิว ↗</button>'
+          ? '<button type="button" onclick="closeNotificationModal(); switchView(\'registry\'); openDetailModal(\'' + escapeHtml(item.bookingId) + '\')" class="text-teal-700 font-bold hover:underline shrink-0">ดูคิว ↗</button>'
           : '';
         return (
           '<div class="rounded-xl bg-white border border-slate-200 p-2.5 flex items-start justify-between gap-2">' +
